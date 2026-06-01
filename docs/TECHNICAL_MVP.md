@@ -33,7 +33,7 @@ Small businesses and freelancers face a $3T+ global cash flow problem: invoices 
 
 ### 1.2 Solution
 
-vasmo tokenizes invoices as Real-World Assets (RWAs) on Mantle Network, then deploys an autonomous AI agent to:
+vasmo tokenizes invoices as Real-World Assets (RWAs) on Mantle Sepolia, then deploys an autonomous AI agent to:
 
 - **Optimize yield** on tokenized invoices (3-8% APY)
 - **Protect privacy** using cryptographic commitments
@@ -71,7 +71,7 @@ The "Living Agent" architecture streams AI reasoning in real-time via WebSocket,
           │ wagmi/viem     │                │                    │ WebSocket
           │                │                │                    │
 ┌─────────▼────────────────▼────────────────▼────────────────────┼────────────┐
-│                         MANTLE NETWORK                         │            │
+│                       MANTLE SEPOLIA                           │            │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐            │            │
 │  │ InvoiceNFT  │  │ YieldVault  │  │  Privacy    │            │            │
 │  │  (ERC-721)  │◄─┤             │  │  Registry   │            │            │
@@ -769,7 +769,7 @@ cd /Users/yonko/invoiceagent/contracts
 
 # 2. Set environment
 export PRIVATE_KEY=your_private_key_here
-export MANTLE_SEPOLIA_RPC=https://rpc.sepolia.mantle.xyz
+export MANTLE_SEPOLIA_RPC=https://5003.rpc.thirdweb.com/
 
 # 3. Deploy
 forge script script/Deploy.s.sol \
@@ -795,7 +795,7 @@ cd /Users/yonko/invoiceagent/agent
 cp .env.example .env
 
 # 3. Edit .env with deployed addresses
-MANTLE_RPC_URL=https://rpc.sepolia.mantle.xyz
+MANTLE_RPC_URL=https://5003.rpc.thirdweb.com/
 AGENT_PRIVATE_KEY=your_agent_wallet_private_key
 ANTHROPIC_API_KEY=your_anthropic_key  # Optional
 WS_PORT=8080
@@ -868,7 +868,7 @@ cd app && pnpm dev
 
 | Network | Chain ID | RPC |
 |---------|----------|-----|
-| Mantle Sepolia | 5003 | https://rpc.sepolia.mantle.xyz |
+| Mantle Sepolia | 5003 | https://5003.rpc.thirdweb.com/ |
 | Mantle Mainnet | 5000 | https://rpc.mantle.xyz |
 
 ---

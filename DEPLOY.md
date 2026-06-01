@@ -129,7 +129,7 @@ Complete the manual testing flows:
 
 ### Connect & Dashboard (30-45s)
 **SCREEN**: Click "Launch App" → Connect MetaMask → Dashboard appears
-**SAY**: "vasmo runs on Mantle Network. Connect your wallet, and you're ready to tokenize invoices."
+**SAY**: "vasmo runs on Mantle Sepolia. Connect your wallet, and you're ready to tokenize invoices."
 
 ### Mint Invoice NFT (45-75s)
 **SCREEN**: Click "Mint Invoice" → Fill form → Submit → See transaction

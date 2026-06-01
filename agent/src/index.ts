@@ -19,7 +19,7 @@ function validateEnvironment(addresses: ContractAddresses): { valid: boolean; wa
   const errors: string[] = [];
 
   const envVars: EnvValidation[] = [
-    { name: 'RPC_URL', value: process.env.RPC_URL || process.env.CHAIN_RPC_URL, required: false, description: 'RPC endpoint' },
+    { name: 'MANTLE_RPC_URL', value: process.env.RPC_URL || process.env.CHAIN_RPC_URL || process.env.MANTLE_RPC_URL, required: false, description: 'RPC endpoint' },
     { name: 'AGENT_PRIVATE_KEY', value: process.env.AGENT_PRIVATE_KEY, required: false, description: 'Agent wallet key' },
     { name: 'ANTHROPIC_API_KEY', value: process.env.ANTHROPIC_API_KEY, required: false, description: 'LLM API key' },
     { name: 'WS_PORT', value: process.env.WS_PORT, required: false, description: 'WebSocket port' },
@@ -42,7 +42,7 @@ function validateEnvironment(addresses: ContractAddresses): { valid: boolean; wa
   }
 
   // Validate RPC URL format
-  const rpcUrl = process.env.RPC_URL || process.env.CHAIN_RPC_URL || 'http://127.0.0.1:8545';
+  const rpcUrl = process.env.RPC_URL || process.env.CHAIN_RPC_URL || process.env.MANTLE_RPC_URL || 'http://127.0.0.1:8545';
   if (!rpcUrl.startsWith('http://') && !rpcUrl.startsWith('https://')) {
     errors.push('RPC_URL must be a valid HTTP(S) URL');
   }

@@ -32,9 +32,12 @@ Hardhat workspace for the vasmo protocol contracts.
 ## Deployed (Mantle Sepolia)
 
 ```
-InvoiceNFT:   0xf35be6ffebf91acc27a78696cf912595c6b08aaa
-YieldVault:   0xd2cad31a080b0dae98d9d6427e500b50bcb92774
-AgentRouter:  0xec5bfee9d17e25cc8d52b8cb7fb81d8cabb53c5f
+InvoiceNFT:   0x018ee8F363421016177DbC8F9492fe2a1C720e29
+YieldVault:   0x7f51D3B234E4c20959A1f6e91D3B852EE16c65A6
+AgentRouter:  0x4430248F3b2304F946f08c43A06C3451657FD658
+PrivacyRegistry: 0x2DA4B52913A928263a405dE3b42a5768a4dCa3b0
+PythOracle:   0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3
+AaveYieldSource: 0x5a179d261fD322ecaED06FA9Aa2973980D74322c
 ```
 
 ## Quick Start
@@ -55,8 +58,7 @@ npm run deploy:multichain
 # On Mantle Sepolia both the Pyth contract address and the MNT/USD feed ID are built in.
 # You only need these env vars if you want to override the defaults.
 # $env:PYTH_NATIVE_USD_FEED="0x..."
-# If the default RPC is slow or unavailable, point `MANTLE_SEPOLIA_RPC` at another public endpoint
-# such as `https://mantle-sepolia.drpc.org` or `https://rpc.sepolia.mantle.xyz`.
+# If the default RPC is slow or unavailable, point `MANTLE_SEPOLIA_RPC` at another public Mantle Sepolia endpoint.
 
 # Deploy a mock Aave pool you can point AAVE_POOL at
 npm run deploy:mock-aave

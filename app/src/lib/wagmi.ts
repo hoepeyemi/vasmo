@@ -1,9 +1,9 @@
 import { http, createConfig } from 'wagmi';
 import {
-  mainnet, sepolia,
+  mainnet,
   base,
-  arbitrum, arbitrumSepolia,
-  polygon, polygonAmoy,
+  arbitrum,
+  polygon,
   bsc,
 } from 'wagmi/chains';
 import { defineChain } from 'viem';
@@ -58,12 +58,12 @@ export const mantleSepolia = defineChain({
   },
 });
 
-const isTestnet = process.env.NEXT_PUBLIC_NETWORK_MODE === 'testnet';
+const isTestnet = process.env.NEXT_PUBLIC_NETWORK_MODE !== 'mainnet';
 
 // Mainnet chains
 const mainnetChains = [mainnet, bsc, base, arbitrum, polygon, skaleEuropa] as const;
 // Testnet chains
-const testnetChains = [sepolia, mantleSepolia, arbitrumSepolia, polygonAmoy] as const;
+const testnetChains = [mantleSepolia] as const;
 // Dev chain
 const devChains = [anvil] as const;
 
@@ -90,10 +90,7 @@ export const config = createConfig({
     [polygon.id]: http(process.env.NEXT_PUBLIC_POLYGON_RPC || undefined),
     [skaleEuropa.id]: http('https://mainnet.skalenodes.com/v1/elated-tan-skat'),
     // Testnets
-    [sepolia.id]: http(process.env.NEXT_PUBLIC_SEPOLIA_RPC || undefined),
     [mantleSepolia.id]: http(process.env.NEXT_PUBLIC_MANTLE_SEPOLIA_RPC || 'https://5003.rpc.thirdweb.com/'),
-    [arbitrumSepolia.id]: http(process.env.NEXT_PUBLIC_ARBITRUM_SEPOLIA_RPC || undefined),
-    [polygonAmoy.id]: http(process.env.NEXT_PUBLIC_POLYGON_AMOY_RPC || undefined),
     // Local
     [anvil.id]: http('http://127.0.0.1:8545'),
   },

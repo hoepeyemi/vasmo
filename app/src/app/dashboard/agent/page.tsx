@@ -163,7 +163,7 @@ export default function AgentPage() {
       </main>
 
       {/* Status Bar */}
-      <StatusBar status="online" network="MULTICHAIN" />
+      <StatusBar status="online" network="MANTLE SEPOLIA" />
     </div>
   )
 }

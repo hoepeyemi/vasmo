@@ -116,6 +116,8 @@ function MintInvoiceContent() {
     const error = searchParams.get("error")
     if (qbStatus === "success") {
       toast.success("QuickBooks connected")
+    } else if (qbStatus === "demo") {
+      toast.info("QuickBooks demo data loaded")
     } else if (error === "quickbooks_auth_failed") {
       toast.error("QuickBooks connection failed")
     }
@@ -227,7 +229,7 @@ function MintInvoiceContent() {
             </div>
           </div>
         </main>
-        <StatusBar status="online" network="MULTICHAIN" />
+        <StatusBar status="online" network="MANTLE SEPOLIA" />
       </div>
     )
   }
@@ -489,7 +491,7 @@ function MintInvoiceContent() {
         )}
       </main>
 
-      <StatusBar status="online" network="MULTICHAIN" />
+      <StatusBar status="online" network="MANTLE SEPOLIA" />
     </div>
   )
 }

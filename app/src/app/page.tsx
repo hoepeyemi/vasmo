@@ -189,7 +189,7 @@ export default function LandingPage() {
           </div>
           <div className="stat-cell">
             <div className="stat-label">Network</div>
-            <div className="stat-value">MULTICHAIN</div>
+            <div className="stat-value">MANTLE SEPOLIA</div>
           </div>
         </div>
       </ScrollReveal>
@@ -256,7 +256,7 @@ export default function LandingPage() {
             <span>vasmo protocol</span>
           </div>
           <div className="flex items-center gap-4">
-            <span>Multichain AI Treasury</span>
+            <span>Mantle Sepolia AI Treasury</span>
             <span>|</span>
             <span>Open Source</span>
           </div>
@@ -264,7 +264,7 @@ export default function LandingPage() {
       </footer>
 
       {/* Status Bar */}
-      <StatusBar status="online" network="MULTICHAIN" />
+      <StatusBar status="online" network="MANTLE SEPOLIA" />
     </div>
   )
 }

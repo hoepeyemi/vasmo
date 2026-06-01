@@ -136,8 +136,7 @@ export const SUPPORTED_MAINNET_CHAINS = [
 ] as const
 
 export const SUPPORTED_TESTNET_CHAINS = [
-  CHAIN_IDS.MANTLE_SEPOLIA, CHAIN_IDS.SEPOLIA,
-  CHAIN_IDS.ARBITRUM_SEPOLIA, CHAIN_IDS.POLYGON_AMOY,
+  CHAIN_IDS.MANTLE_SEPOLIA,
 ] as const
 
 export function getContractAddresses(chainId: number): ContractAddresses {

@@ -48,10 +48,10 @@ nano .env
 **Minimum required (for read-only mode):**
 ```bash
 MANTLE_RPC_URL=https://5003.rpc.thirdweb.com/
-INVOICE_NFT_ADDRESS=0xf35be6ffebf91acc27a78696cf912595c6b08aaa
-YIELD_VAULT_ADDRESS=0xd2cad31a080b0dae98d9d6427e500b50bcb92774
-AGENT_ROUTER_ADDRESS=0xec5bfee9d17e25cc8d52b8cb7fb81d8cabb53c5f
-MOCK_ORACLE_ADDRESS=0xede6db2855bacf191e5b2e2d91b6276bb56bf183
+INVOICE_NFT_ADDRESS=0x018ee8F363421016177DbC8F9492fe2a1C720e29
+YIELD_VAULT_ADDRESS=0x7f51D3B234E4c20959A1f6e91D3B852EE16c65A6
+AGENT_ROUTER_ADDRESS=0x4430248F3b2304F946f08c43A06C3451657FD658
+PYTH_ORACLE_ADDRESS=0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3
 ```
 
 **For full functionality (auto-execution):**
@@ -92,7 +92,7 @@ pnpm dev
   💰 Yield: ⚠️  Simulated Yield
 
   ⚠️  Running with SIMULATED data for demo.
-  Set PYTH_ORACLE_ADDRESS and LENDLE_YIELD_ADDRESS for production.
+  Set PYTH_ORACLE_ADDRESS and AAVE_YIELD_ADDRESS for production.
 ============================================================
 
 ✅ vasmo Agent is live. Press Ctrl+C to stop.
@@ -121,7 +121,7 @@ Visit `http://localhost:3000/dashboard/agent` to see the agent in action.
 | `INVOICE_NFT_ADDRESS` | Yes | - | InvoiceNFT contract address |
 | `YIELD_VAULT_ADDRESS` | Yes | - | YieldVault contract address |
 | `AGENT_ROUTER_ADDRESS` | Yes | - | AgentRouter contract address |
-| `MOCK_ORACLE_ADDRESS` | Yes | - | Oracle contract address |
+| `PYTH_ORACLE_ADDRESS` | Yes | - | Oracle contract address |
 | `PYTH_ORACLE_ADDRESS` | No | - | Pyth Network oracle (production) |
 | `LENDLE_YIELD_ADDRESS` | No | - | Lendle yield source (production) |
 
