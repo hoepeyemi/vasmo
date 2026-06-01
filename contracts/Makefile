@@ -1,82 +1,40 @@
 # vasmo Contracts Makefile
 
-# Load environment variables
--include .env
+.PHONY: help setup build test clean deploy-local deploy-factory deploy-multichain
 
-# Default target
-.PHONY: help
 help:
-	@echo "vasmo Contracts Deployment"
+	@echo "vasmo Contracts"
 	@echo ""
 	@echo "Setup:"
-	@echo "  make setup        - Install dependencies"
+	@echo "  make setup          - Install dependencies"
 	@echo ""
 	@echo "Development:"
-	@echo "  make build        - Build contracts"
-	@echo "  make test         - Run tests"
-	@echo "  make anvil        - Start local Anvil node"
-	@echo "  make deploy-local - Deploy to local Anvil"
+	@echo "  make build          - Compile contracts with Hardhat"
+	@echo "  make test           - Run Hardhat tests"
+	@echo "  make clean          - Remove Hardhat build output"
 	@echo ""
-	@echo "Production:"
-	@echo "  make deploy-sepolia  - Deploy to Mantle Sepolia"
-	@echo "  make deploy-mainnet  - Deploy to Mantle Mainnet (careful!)"
+	@echo "Deployment:"
+	@echo "  make deploy-local    - Deploy core contracts on Hardhat network"
+	@echo "  make deploy-factory  - Deploy via VasmoFactory"
+	@echo "  make deploy-multichain - Deploy with optional Pyth/Aave config"
 
-# Setup
-.PHONY: setup
 setup:
-	forge install
+	npm install
 
-# Build
-.PHONY: build
 build:
-	forge build
+	npm run build
 
-# Test
-.PHONY: test
 test:
-	forge test -vvv
+	npm test
 
-# Start Anvil
-.PHONY: anvil
-anvil:
-	anvil --chain-id 31337
+clean:
+	npm run clean
 
-# Deploy to local Anvil
-.PHONY: deploy-local
 deploy-local:
-	forge script script/Deploy.s.sol:DeployScript --rpc-url http://127.0.0.1:8545 --broadcast -vvv
+	npm run deploy:local
 
-# Deploy to Mantle Sepolia
-.PHONY: deploy-sepolia
-deploy-sepolia:
-	@echo "Deploying to Mantle Sepolia..."
-	@echo "Make sure you have:"
-	@echo "  1. PRIVATE_KEY set in .env"
-	@echo "  2. MNT tokens for gas (get from faucet)"
-	@echo ""
-	forge script script/Deploy.s.sol:DeployScript \
-		--rpc-url $(MANTLE_SEPOLIA_RPC) \
-		--broadcast \
-		--verify \
-		-vvv
+deploy-factory:
+	npm run deploy:factory
 
-# Deploy to Mantle Mainnet (production)
-.PHONY: deploy-mainnet
-deploy-mainnet:
-	@echo "WARNING: Deploying to MAINNET!"
-	@echo "Press Ctrl+C to cancel or Enter to continue..."
-	@read _
-	forge script script/Deploy.s.sol:DeployScript \
-		--rpc-url $(MANTLE_MAINNET_RPC) \
-		--broadcast \
-		--verify \
-		-vvv
-
-# Deploy production with Pyth Oracle to Sepolia
-.PHONY: deploy-sepolia-production
-deploy-sepolia-production:
-	@echo "Deploying PRODUCTION contracts to Mantle Sepolia..."
-	forge script script/DeployProduction.s.sol:DeployProductionScript \
-		--rpc-url $(MANTLE_SEPOLIA_RPC) \
-		--broadcast \
-		-vvv
+deploy-multichain:
+	npm run deploy:multichain
