@@ -1,13 +1,13 @@
 # vasmo - AI Memory
 
 ## Project Overview
-vasmo is an AI treasury agent for B2B commerce that tokenizes invoices as NFTs on Cronos and deposits them into yield-generating DeFi strategies.
+vasmo is an AI treasury agent for B2B commerce that tokenizes invoices as NFTs on Mantle Sepolia and deposits them into yield-generating DeFi strategies.
 
 ## Key Decisions
 - **UI Style:** Terminal/Bloomberg aesthetic with monospace fonts, green accents (#10b981), dark theme (#0a0a0a)
 - **Video Tool:** Remotion for programmatic video generation
 - **Voiceover:** ElevenLabs with Brian voice
-- **Tracks Selected:** x402 Agentic Finance/Payment Track + Cronos Ecosystem Integrations
+- **Tracks Selected:** x402 Agentic Finance/Payment Track + Mantle Sepolia Integrations
 
 ## Tech Stack
 - Next.js 16.1.1 with Turbopack

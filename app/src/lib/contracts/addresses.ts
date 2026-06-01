@@ -13,7 +13,6 @@ export const CHAIN_IDS = {
   SEPOLIA: 11155111,
   BSC_TESTNET: 97,
   POLYGON_AMOY: 80002,
-  BASE_SEPOLIA: 84532,
   ARBITRUM_SEPOLIA: 421614,
   SKALE_TESTNET: 1444673419,
   // Local
@@ -45,14 +44,6 @@ const emptyAddresses: ContractAddresses = {
 // Contract addresses per chain - populated after deployment
 const addresses: Partial<Record<ChainId, ContractAddresses>> = {
   // Testnets - will be populated after deployment
-  [CHAIN_IDS.BASE_SEPOLIA]: {
-    invoiceNFT: "0x515ab226DD7917612eeDd439A9Cfb0b4b1731440",
-    yieldVault: "0xacBeB5f58604A4A9A8B9a74EC39ebCA1117bC326",
-    agentRouter: "0xEe9AD131A155E7669004056F01fFb26964637Fd4",
-    privacyRegistry: "0xaA9e2C3DF776c3d552E2358AcF8155C91929EF1B",
-    pythOracle: "0xA0E9510fBe1Ee857B255B2960438122fdA0b32E3",
-    aaveYieldSource: "0x447De96C1c3E15af485a41fb1B5Fde888B02d9eF",
-  },
   [CHAIN_IDS.MANTLE_SEPOLIA]: {
     invoiceNFT: "0x018ee8F363421016177DbC8F9492fe2a1C720e29",
     yieldVault: "0x7f51D3B234E4c20959A1f6e91D3B852EE16c65A6",
@@ -125,12 +116,8 @@ export const CHAIN_META: Partial<Record<ChainId, ChainMeta>> = {
     name: "Sepolia", shortName: "SEP", hasAave: true, hasPyth: true,
     gasLabel: "~$0", explorerUrl: "https://sepolia.etherscan.io", nativeCurrency: "ETH",
   },
-  [CHAIN_IDS.BASE_SEPOLIA]: {
-    name: "Base Sepolia", shortName: "B-SEP", hasAave: true, hasPyth: true,
-    gasLabel: "~$0", explorerUrl: "https://sepolia.basescan.org", nativeCurrency: "ETH",
-  },
   [CHAIN_IDS.MANTLE_SEPOLIA]: {
-    name: "Mantle Sepolia", shortName: "M-SEP", hasAave: true, hasPyth: true,
+    name: "Mantle Sepolia", shortName: "M-SEP", hasAave: false, hasPyth: true,
     gasLabel: "~$0", explorerUrl: "https://explorer.sepolia.mantle.xyz", nativeCurrency: "MNT",
   },
   [CHAIN_IDS.ARBITRUM_SEPOLIA]: {
@@ -149,8 +136,8 @@ export const SUPPORTED_MAINNET_CHAINS = [
 ] as const
 
 export const SUPPORTED_TESTNET_CHAINS = [
-  CHAIN_IDS.SEPOLIA, CHAIN_IDS.BASE_SEPOLIA,
-  CHAIN_IDS.MANTLE_SEPOLIA, CHAIN_IDS.ARBITRUM_SEPOLIA, CHAIN_IDS.POLYGON_AMOY,
+  CHAIN_IDS.MANTLE_SEPOLIA, CHAIN_IDS.SEPOLIA,
+  CHAIN_IDS.ARBITRUM_SEPOLIA, CHAIN_IDS.POLYGON_AMOY,
 ] as const
 
 export function getContractAddresses(chainId: number): ContractAddresses {

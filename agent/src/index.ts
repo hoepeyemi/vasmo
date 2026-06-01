@@ -81,7 +81,7 @@ function readDeploymentDefaults(networkName: string): Partial<ContractAddresses>
 }
 
 // Load configuration from environment
-const RPC_URL = process.env.RPC_URL || process.env.CHAIN_RPC_URL || 'http://127.0.0.1:8545';
+const RPC_URL = process.env.RPC_URL || process.env.CHAIN_RPC_URL || process.env.MANTLE_RPC_URL || 'https://5003.rpc.thirdweb.com/';
 const PRIVATE_KEY = process.env.AGENT_PRIVATE_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const WS_PORT = parseInt(process.env.WS_PORT || '8080');

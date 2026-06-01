@@ -13,7 +13,6 @@ const AAVE_POOL_ADDRESSES: Partial<Record<number, `0x${string}`>> = {
   [CHAIN_IDS.POLYGON]:   "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
   // Testnets
   [CHAIN_IDS.SEPOLIA]:         "0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951",
-  [CHAIN_IDS.BASE_SEPOLIA]:    "0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b",
   [CHAIN_IDS.ARBITRUM_SEPOLIA]:"0xBfC91D59fdAA134A4ED45f7B28502d3E9d9F3192",
   [CHAIN_IDS.POLYGON_AMOY]:    "0x0b913A76beFF3887d611050b5e2D4a3aBBCf19a2",
 }
@@ -27,7 +26,6 @@ const USDC_ADDRESSES: Partial<Record<number, `0x${string}`>> = {
   [CHAIN_IDS.POLYGON]:   "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
   // Testnets
   [CHAIN_IDS.SEPOLIA]:         "0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8",
-  [CHAIN_IDS.BASE_SEPOLIA]:    "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
   [CHAIN_IDS.ARBITRUM_SEPOLIA]:"0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
   [CHAIN_IDS.POLYGON_AMOY]:    "0x52D800ca262dc7C3D1F72A80D3E78E0636A23B33",
 }
@@ -132,7 +130,7 @@ export function useYieldAPY(asset: string = "USDC") {
     }
   }
 
-  // Fallback: simulated data (SKALE, unsupported chains, read errors, non-USDC assets)
+  // Fallback: simulated data (SKALE, Mantle Sepolia, unsupported chains, read errors, non-USDC assets)
   return {
     supplyAPY: fallback.supply,
     borrowAPY: fallback.borrow,

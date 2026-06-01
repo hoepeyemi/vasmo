@@ -51,7 +51,7 @@ Edit `agent/.env`:
 
 ```env
 # Mantle Sepolia RPC
-MANTLE_RPC_URL=https://rpc.sepolia.mantle.xyz
+MANTLE_RPC_URL=https://5003.rpc.thirdweb.com/
 
 # Agent wallet private key (needs MNT for gas)
 AGENT_PRIVATE_KEY=0x...

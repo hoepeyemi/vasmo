@@ -24,7 +24,7 @@ MOCK_ORACLE_ADDRESS=0xede6db2855bacf191e5b2e2d91b6276bb56bf183
 
 **Optional (but recommended):**
 ```
-MANTLE_RPC_URL=https://rpc.sepolia.mantle.xyz
+MANTLE_RPC_URL=https://5003.rpc.thirdweb.com/
 WS_PORT=8080
 NODE_ENV=production
 AGENT_PRIVATE_KEY=<your-agent-wallet-private-key>

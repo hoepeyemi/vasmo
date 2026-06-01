@@ -1,6 +1,6 @@
 // Server-side contract interaction utilities
 import { createPublicClient, http, type Address } from "viem"
-import { base, baseSepolia } from "viem/chains"
+import { base } from "viem/chains"
 import { InvoiceNFTABI, YieldVaultABI, AgentRouterABI, type Invoice, type Deposit, InvoiceStatus, Strategy } from "./abis"
 import { CHAIN_IDS, getContractAddresses } from "./addresses"
 
@@ -17,13 +17,13 @@ const MANTLE_SEPOLIA_CHAIN = {
   },
 } as const
 
-// Get chain based on environment (defaults to Base Sepolia for testnet)
-const chainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID || CHAIN_IDS.BASE_SEPOLIA)
+// Get chain based on environment (defaults to Mantle Sepolia for testnet)
+const chainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID || CHAIN_IDS.MANTLE_SEPOLIA)
 const chain = chainId === CHAIN_IDS.BASE
   ? base
   : chainId === CHAIN_IDS.MANTLE_SEPOLIA
     ? MANTLE_SEPOLIA_CHAIN
-    : baseSepolia
+    : MANTLE_SEPOLIA_CHAIN
 
 // Create public client for reading contracts
 export const publicClient = createPublicClient({

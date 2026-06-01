@@ -1,6 +1,6 @@
 # vasmo Frontend
 
-Next.js 15 dashboard for vasmo - tokenized invoice yield optimization on Mantle.
+Next.js 15 dashboard for vasmo - tokenized invoice yield optimization on Mantle Sepolia.
 
 ## Quick Start
 
@@ -25,9 +25,11 @@ Open [http://localhost:3000](http://localhost:3000)
 NEXT_PUBLIC_INVOICE_NFT_ADDRESS=0x...
 NEXT_PUBLIC_YIELD_VAULT_ADDRESS=0x...
 NEXT_PUBLIC_AGENT_ROUTER_ADDRESS=0x...
+NEXT_PUBLIC_PRIVACY_REGISTRY_ADDRESS=0x...
 
 # Optional
 NEXT_PUBLIC_CHAIN_ID=5003  # Mantle Sepolia
+NEXT_PUBLIC_MANTLE_SEPOLIA_RPC=https://5003.rpc.thirdweb.com/
 NEXT_PUBLIC_AGENT_WS_URL=ws://localhost:8080
 ```
 

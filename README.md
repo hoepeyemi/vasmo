@@ -1,10 +1,10 @@
 # vasmo
 
-> Autonomous AI Treasury Agent for B2B Commerce on Cronos
+> Autonomous AI Treasury Agent for B2B Commerce on Mantle Sepolia
 
-vasmo is an AI-native treasury management system that transforms how businesses handle invoices. When you create an invoice, our autonomous agent takes over: tokenizing it as a privacy-preserving NFT, deploying capital to yield strategies, and settling payments via x402 rails. It's the first AI treasury agent for Web3 businesses on the Cronos ecosystem.
+vasmo is an AI-native treasury management system that transforms how businesses handle invoices. When you create an invoice, our autonomous agent takes over: tokenizing it as a privacy-preserving NFT, deploying capital to yield strategies, and settling payments via x402 rails. It is deployed on Mantle Sepolia for the current testnet flow.
 
-**[Live Demo](https://vasmo-app.vercel.app/)** · Built for Cronos x402 PayTech Hackathon
+**[Live Demo](https://vasmo-app.vercel.app/)** · Built for Mantle Sepolia testnet
 
 ---
 
@@ -21,12 +21,12 @@ This is agentic finance infrastructure: machines handling real financial decisio
 
 ---
 
-## Cronos Ecosystem Integration
+## Mantle Sepolia Integration
 
-Built natively for the Cronos ecosystem:
+Built natively for Mantle Sepolia:
 
 - **x402 Payment Rails** — Full implementation of x402 on-chain invoice settlement
-- **Cronos EVM Testnet** — Live deployment on Chain ID 338
+- **Mantle Sepolia** — Live deployment on Chain ID 5003
 - **Crypto.com Ecosystem Ready** — Architecture supports [Crypto.com Market Data MCP](https://mcp.crypto.com/docs) integration
 - **Pyth Network Oracles** — Price feed infrastructure for real-time risk assessment
 
@@ -85,7 +85,7 @@ This project succeeds if:
 ## Scope
 
 **In scope (what we built):**
-- Wallet connection (Cronos Testnet)
+- Wallet connection (Mantle Sepolia)
 - Invoice minting (manual entry)
 - On-chain payment (x402 pay invoice)
 - Deposit to yield vault
@@ -106,7 +106,7 @@ This project succeeds if:
 
 | Layer | Technology |
 |-------|------------|
-| Network | Cronos (Chain ID 338) |
+| Network | Mantle Sepolia (Chain ID 5003) |
 | Contracts | Solidity (Foundry) |
 | Frontend | Next.js + wagmi + Tailwind |
 | Agent | TypeScript + WebSocket |
@@ -115,20 +115,21 @@ This project succeeds if:
 
 ---
 
-## Deployed Contracts (Cronos Testnet)
+## Deployed Contracts (Mantle Sepolia)
 
-**Chain ID:** 338
+**Chain ID:** 5003
 **Deployment Date:** 2026-01-22
 
 | Contract | Address |
 |----------|---------|
-| InvoiceNFT | [`0xEde6Db2855BACF191E5B2E2d91B6276bB56bf183`](https://explorer.cronos.org/testnet3/address/0xEde6Db2855BACF191E5B2E2d91B6276bB56bf183) |
-| YieldVault | [`0xD0db0eb608107862E963737FE87ffdFF7f400e3C`](https://explorer.cronos.org/testnet3/address/0xD0db0eb608107862E963737FE87ffdFF7f400e3C) |
-| AgentRouter | [`0xb8F4546e24e437779bC09c3b70ce70Ff9542bdD4`](https://explorer.cronos.org/testnet3/address/0xb8F4546e24e437779bC09c3b70ce70Ff9542bdD4) |
-| PrivacyRegistry | [`0xf9e5a9E147856D9B26aB04202D79C2c3dA4a326B`](https://explorer.cronos.org/testnet3/address/0xf9e5a9E147856D9B26aB04202D79C2c3dA4a326B) |
-| MockOracle | [`0x9A6d36A0487EA52df43E7704a97F47844C4Eac4E`](https://explorer.cronos.org/testnet3/address/0x9A6d36A0487EA52df43E7704a97F47844C4Eac4E) |
+| InvoiceNFT | [`0x018ee8F363421016177DbC8F9492fe2a1C720e29`](https://explorer.sepolia.mantle.xyz/address/0x018ee8F363421016177DbC8F9492fe2a1C720e29) |
+| YieldVault | [`0x7f51D3B234E4c20959A1f6e91D3B852EE16c65A6`](https://explorer.sepolia.mantle.xyz/address/0x7f51D3B234E4c20959A1f6e91D3B852EE16c65A6) |
+| AgentRouter | [`0x4430248F3b2304F946f08c43A06C3451657FD658`](https://explorer.sepolia.mantle.xyz/address/0x4430248F3b2304F946f08c43A06C3451657FD658) |
+| PrivacyRegistry | [`0x2DA4B52913A928263a405dE3b42a5768a4dCa3b0`](https://explorer.sepolia.mantle.xyz/address/0x2DA4B52913A928263a405dE3b42a5768a4dCa3b0) |
+| PythOracle | [`0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3`](https://explorer.sepolia.mantle.xyz/address/0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3) |
+| AaveYieldSource | [`0x5a179d261fD322ecaED06FA9Aa2973980D74322c`](https://explorer.sepolia.mantle.xyz/address/0x5a179d261fD322ecaED06FA9Aa2973980D74322c) |
 
-[View on Cronos Explorer](https://explorer.cronos.org/testnet3)
+[View on Mantle Explorer](https://explorer.sepolia.mantle.xyz)
 
 ---
 
@@ -139,19 +140,19 @@ This project succeeds if:
 - Node.js 18+
 - pnpm
 - Foundry (for contracts)
-- MetaMask with Cronos Testnet configured
+- MetaMask with Mantle Sepolia configured
 
-### Add Cronos Testnet to MetaMask
+### Add Mantle Sepolia to MetaMask
 
 | Setting | Value |
 |---------|-------|
-| Network Name | Cronos Testnet |
-| RPC URL | https://evm-t3.cronos.org |
-| Chain ID | 338 |
-| Symbol | TCRO |
-| Explorer | https://explorer.cronos.org/testnet3 |
+| Network Name | Mantle Sepolia |
+| RPC URL | https://5003.rpc.thirdweb.com/ |
+| Chain ID | 5003 |
+| Symbol | MNT |
+| Explorer | https://explorer.sepolia.mantle.xyz |
 
-Get test CRO from the [Cronos Faucet](https://cronos.org/faucet).
+Get test MNT from a Mantle Sepolia faucet/provider.
 
 ### Run Locally
 
@@ -172,7 +173,7 @@ Visit `http://localhost:3000`
 
 ```bash
 cd contracts
-forge script script/DeployCronos.s.sol --rpc-url https://evm-t3.cronos.org --broadcast --slow
+npm run deploy:mantle-sepolia
 ```
 
 ---
@@ -208,12 +209,12 @@ Clients can pay invoices directly through the UI or programmatically via the sma
 
 ## Known Limitations (Hackathon Prototype)
 
-**This is a demonstration project built for Cronos x402 PayTech Hackathon.**
+**This is a demonstration project built for Mantle Sepolia testnet.**
 
 ### What's Real vs Simulated
 
 #### Fully Functional
-- Smart contracts deployed on Cronos Testnet
+- Smart contracts deployed on Mantle Sepolia
 - Wallet connection and transaction signing
 - Invoice NFT minting and ownership tracking
 - On-chain invoice payment (x402)
