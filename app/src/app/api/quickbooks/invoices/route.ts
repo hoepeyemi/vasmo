@@ -29,8 +29,7 @@ export async function GET() {
           success: false,
           requiresAuth: true,
           error: "QuickBooks is not connected yet.",
-        },
-        { status: 401 }
+        }
       )
     }
 
@@ -50,8 +49,7 @@ export async function GET() {
             success: false,
             requiresAuth: true,
             error: "QuickBooks session expired. Please reconnect.",
-          },
-          { status: 401 }
+          }
         )
       }
     }
@@ -79,4 +77,3 @@ export async function GET() {
     )
   }
 }
-

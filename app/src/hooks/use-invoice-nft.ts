@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount, useChainId } from "wagmi"
 import { InvoiceNFTABI, type Invoice, InvoiceStatus } from "@/lib/contracts/abis"
 import { getInvoiceNFTAddress } from "@/lib/contracts/addresses"
@@ -120,12 +121,38 @@ export function useInvoice(tokenId: bigint | number | undefined) {
 export function useMintInvoice() {
   const chainId = useChainId()
   const contractAddress = getInvoiceNFTAddress(chainId)
+  const [confirmationTimedOut, setConfirmationTimedOut] = useState(false)
+  const [confirmationStartedAt, setConfirmationStartedAt] = useState<number | null>(null)
 
   const { writeContract, data: hash, isPending, error } = useWriteContract()
 
   const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({
     hash,
+    confirmations: 1,
   })
+
+  useEffect(() => {
+    if (hash) {
+      setConfirmationStartedAt(Date.now())
+      setConfirmationTimedOut(false)
+      return
+    }
+
+    setConfirmationStartedAt(null)
+    setConfirmationTimedOut(false)
+  }, [hash])
+
+  useEffect(() => {
+    if (!confirmationStartedAt || isSuccess || !isConfirming) {
+      return
+    }
+
+    const timeoutId = setTimeout(() => {
+      setConfirmationTimedOut(true)
+    }, 60_000)
+
+    return () => clearTimeout(timeoutId)
+  }, [confirmationStartedAt, isConfirming, isSuccess])
 
   // Extract token ID from transaction logs
   const mintedTokenId = receipt?.logs
@@ -190,6 +217,7 @@ export function useMintInvoice() {
     isConfirming,
     isSuccess,
     mintedTokenId,
+    confirmationTimedOut,
     error,
   }
 }

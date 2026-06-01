@@ -118,7 +118,7 @@ export default function AgentPage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] status-pulse" />
-                <span className="text-[#e5e5e5]">Checking CRO price via Pyth</span>
+                <span className="text-[#e5e5e5]">Checking MNT price via Pyth</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] status-pulse" />

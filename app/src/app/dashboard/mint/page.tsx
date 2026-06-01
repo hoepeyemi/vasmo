@@ -38,7 +38,7 @@ interface QuickBooksInvoice {
 function MintInvoiceContent() {
   const searchParams = useSearchParams()
   const { address, isConnected } = useAccount()
-  const { mint, isPending, isConfirming, isSuccess, hash, mintedTokenId, error } = useMintInvoice()
+  const { mint, isPending, isConfirming, isSuccess, hash, mintedTokenId, confirmationTimedOut, error } = useMintInvoice()
 
   const [step, setStep] = useState(1)
   const [selectedQBInvoice, setSelectedQBInvoice] = useState<QuickBooksInvoice | null>(null)
@@ -446,7 +446,7 @@ function MintInvoiceContent() {
               <div className="p-4 bg-[#111111] rounded border border-[#1f1f1f]">
                 <div className="flex items-center justify-between text-[11px] mb-2">
                   <span className="text-[#666666]">est_gas_fee</span>
-                  <span className="tabular-nums">~0.001 CRO</span>
+                  <span className="tabular-nums">~0.001 MNT</span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="text-[#666666]">network</span>
@@ -480,13 +480,19 @@ function MintInvoiceContent() {
                 {isMinting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    {isPending ? "confirm in wallet..." : "minting..."}
+                    {isPending ? "confirm in wallet..." : confirmationTimedOut ? "still pending..." : "minting..."}
                   </>
                 ) : (
                   "mint invoice nft"
                 )}
               </Button>
             </div>
+
+            {hash && (
+              <div className="mt-4 text-[11px] text-[#666666] break-all">
+                tx: {hash}
+              </div>
+            )}
           </div>
         )}
       </main>
