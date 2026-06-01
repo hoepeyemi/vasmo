@@ -17,6 +17,7 @@ Hardhat workspace for the vasmo protocol contracts.
 - `npm run deploy:factory` deploys the protocol via the factory
 - `npm run deploy:mock-aave` deploys a mock Aave pool for testnet use
 - `npm run deploy:multichain` deploys with optional Pyth and Aave addresses
+- `npm run verify:mantle-sepolia` verifies the Mantle Sepolia deployment through the Mantle explorer API
 
 ## Contracts
 
@@ -66,7 +67,30 @@ npm run deploy:mock-aave
 # Deploy a wrapped MNT asset for testnet usage
 $env:MOCK_AAVE_WRAP_NATIVE="true"
 npm run deploy:mock-aave
+
+# Verify the live Mantle Sepolia contracts programmatically
+# Requires ETHERSCAN_API_KEY (or MANTLESCAN_API_KEY) in contracts/.env
+npm run verify:mantle-sepolia
 ```
+
+## Programmatic Verification
+
+The verification script submits each deployed contract to Mantle's Etherscan V2 API and waits for the result.
+
+Required env var:
+
+- `ETHERSCAN_API_KEY` or `MANTLESCAN_API_KEY`
+
+It verifies these live Mantle Sepolia contracts:
+
+- `InvoiceNFT`
+- `YieldVault`
+- `AgentRouter`
+- `PrivacyRegistry`
+- `PythOracle`
+- `AaveV3YieldSource`
+
+If a contract was already verified, the script skips it. If the live bytecode no longer matches the current source, the script will fail for that contract so you can redeploy and verify again.
 
 ## Architecture
 
