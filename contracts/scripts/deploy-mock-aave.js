@@ -1,4 +1,5 @@
 const hre = require("hardhat");
+const { mergeDeploymentState } = require("./deployment-state");
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
@@ -34,8 +35,18 @@ async function main() {
     console.log("Registered asset:", asset);
     console.log("aToken:", await pool.getAToken(asset));
     console.log("Liquidity rate:", liquidityRate.toString());
+
+    mergeDeploymentState("hardhat", {
+      mockAavePool: await pool.getAddress(),
+      wrappedMnt: process.env.MOCK_AAVE_WRAP_NATIVE === "true" ? asset : undefined,
+      mockAaveAsset: asset,
+      mockAToken: await pool.getAToken(asset),
+    });
   } else {
     console.log("No asset registered. Use MOCK_AAVE_ASSET or MOCK_AAVE_WRAP_NATIVE=true.");
+    mergeDeploymentState("hardhat", {
+      mockAavePool: await pool.getAddress(),
+    });
   }
 }
 

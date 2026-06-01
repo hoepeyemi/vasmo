@@ -1,4 +1,5 @@
 const hre = require("hardhat");
+const { mergeDeploymentState, readDeploymentState } = require("./deployment-state");
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
@@ -8,8 +9,9 @@ async function main() {
     );
   }
   const pythAddress = process.env.PYTH || hre.ethers.ZeroAddress;
-  const aavePool = process.env.AAVE_POOL || hre.ethers.ZeroAddress;
-  const mockAaveAsset = process.env.MOCK_AAVE_ASSET || hre.ethers.ZeroAddress;
+  const deploymentState = readDeploymentState(hre.network.name);
+  const aavePool = process.env.AAVE_POOL || deploymentState.mockAavePool || hre.ethers.ZeroAddress;
+  const mockAaveAsset = process.env.MOCK_AAVE_ASSET || deploymentState.mockAaveAsset || hre.ethers.ZeroAddress;
   const wrapNativeMnt = process.env.MOCK_AAVE_WRAP_NATIVE === "true";
 
   console.log("=== vasmo Multichain Deployment ===");
@@ -70,8 +72,18 @@ async function main() {
       await registerTx.wait();
       console.log("Mock Aave asset registered:", assetToRegister);
       console.log("Mock aToken:", await mockPool.getAToken(assetToRegister));
+
+      mergeDeploymentState(hre.network.name, {
+        mockAavePool: resolvedAavePool,
+        wrappedMnt: assetToRegister,
+        mockAaveAsset: assetToRegister,
+        mockAToken: await mockPool.getAToken(assetToRegister),
+      });
     } else {
       console.log("Mock Aave pool deployed without an asset. Set MOCK_AAVE_ASSET or MOCK_AAVE_WRAP_NATIVE=true.");
+      mergeDeploymentState(hre.network.name, {
+        mockAavePool: resolvedAavePool,
+      });
     }
   }
 
@@ -101,6 +113,16 @@ async function main() {
   console.log("AGENT_ROUTER:", await agentRouter.getAddress());
   console.log("PYTH_ORACLE:", oracleAddress);
   console.log("AAVE_YIELD_SOURCE:", yieldSourceAddress);
+
+  mergeDeploymentState(hre.network.name, {
+    invoiceNFT: await invoiceNFT.getAddress(),
+    yieldVault: await yieldVault.getAddress(),
+    privacyRegistry: await privacyRegistry.getAddress(),
+    agentRouter: await agentRouter.getAddress(),
+    pythOracle: oracleAddress,
+    aaveYieldSource: yieldSourceAddress,
+    mockAavePool: resolvedAavePool,
+  });
 }
 
 main().catch((error) => {
