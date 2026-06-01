@@ -52,10 +52,11 @@ npm run deploy:local
 # Deploy with optional external integrations
 npm run deploy:multichain
 
-# On Mantle Sepolia the Pyth contract address is built in.
-# Set the native feed ID before deploying PythOracle.
+# On Mantle Sepolia both the Pyth contract address and the MNT/USD feed ID are built in.
+# You only need these env vars if you want to override the defaults.
 # $env:PYTH_NATIVE_USD_FEED="0x..."
-# If you leave it unset, deploy:multichain will stop instead of assuming ETH/USD.
+# If the default RPC is slow or unavailable, point `MANTLE_SEPOLIA_RPC` at another public endpoint
+# such as `https://mantle-sepolia.drpc.org` or `https://rpc.sepolia.mantle.xyz`.
 
 # Deploy a mock Aave pool you can point AAVE_POOL at
 npm run deploy:mock-aave

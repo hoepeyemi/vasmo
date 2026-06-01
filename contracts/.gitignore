@@ -3,3 +3,4 @@ cache/
 typechain-types/
 coverage/
 *.log
+.env.local

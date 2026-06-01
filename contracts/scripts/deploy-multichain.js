@@ -2,6 +2,7 @@ const hre = require("hardhat");
 const { mergeDeploymentState, readDeploymentState } = require("./deployment-state");
 
 const MANTLE_SEPOLIA_PYTH_ADDRESS = "0x98046Bd286715D3B0BC227Dd7a956b83D8978603";
+const MANTLE_SEPOLIA_NATIVE_USD_FEED = "0x4e3037c822d852d79af3ac80e35eb420ee3b870dca49f9344a38ef4773fb0585";
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
@@ -13,7 +14,10 @@ async function main() {
   const pythAddress =
     process.env.PYTH ||
     (hre.network.name === "mantleSepolia" ? MANTLE_SEPOLIA_PYTH_ADDRESS : hre.ethers.ZeroAddress);
-  const nativeUsdFeed = process.env.PYTH_NATIVE_USD_FEED || process.env.MNT_USD_FEED || hre.ethers.ZeroHash;
+  const nativeUsdFeed =
+    process.env.PYTH_NATIVE_USD_FEED ||
+    process.env.MNT_USD_FEED ||
+    (hre.network.name === "mantleSepolia" ? MANTLE_SEPOLIA_NATIVE_USD_FEED : hre.ethers.ZeroHash);
   const deploymentState = readDeploymentState(hre.network.name);
   const aavePool = process.env.AAVE_POOL || deploymentState.mockAavePool || hre.ethers.ZeroAddress;
   const mockAaveAsset = process.env.MOCK_AAVE_ASSET || deploymentState.mockAaveAsset || hre.ethers.ZeroAddress;

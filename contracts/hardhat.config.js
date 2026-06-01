@@ -34,6 +34,7 @@ function loadEnvFile(filePath) {
 }
 
 loadEnvFile(path.join(__dirname, ".env"));
+loadEnvFile(path.join(__dirname, ".env.local"));
 loadEnvFile(path.join(__dirname, "..", ".env"));
 
 const optimizerSettings = {
@@ -57,7 +58,10 @@ module.exports = {
   },
   networks: {
     mantleSepolia: {
-      url: process.env.MANTLE_SEPOLIA_RPC || "https://rpc.sepolia.mantle.xyz",
+      url:
+        process.env.MANTLE_SEPOLIA_RPC ||
+        process.env.MANTLE_SEPOLIA_RPC_SELECTED ||
+        "https://5003.rpc.thirdweb.com/",
       chainId: 5003,
       accounts: PRIVATE_KEY,
     },
