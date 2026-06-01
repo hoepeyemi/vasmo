@@ -52,7 +52,8 @@ npm run deploy:local
 # Deploy with optional external integrations
 npm run deploy:multichain
 
-# For Pyth on Mantle Sepolia, set the native feed ID first
+# On Mantle Sepolia the Pyth contract address is built in.
+# Set the native feed ID before deploying PythOracle.
 # $env:PYTH_NATIVE_USD_FEED="0x..."
 # If you leave it unset, deploy:multichain will stop instead of assuming ETH/USD.
 

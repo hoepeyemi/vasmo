@@ -1,6 +1,8 @@
 const hre = require("hardhat");
 const { mergeDeploymentState, readDeploymentState } = require("./deployment-state");
 
+const MANTLE_SEPOLIA_PYTH_ADDRESS = "0x98046Bd286715D3B0BC227Dd7a956b83D8978603";
+
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
   if (!deployer) {
@@ -8,7 +10,9 @@ async function main() {
       "No deployer account available. Set PRIVATE_KEY in contracts/.env or your shell before running deploy:mantle-sepolia."
     );
   }
-  const pythAddress = process.env.PYTH || hre.ethers.ZeroAddress;
+  const pythAddress =
+    process.env.PYTH ||
+    (hre.network.name === "mantleSepolia" ? MANTLE_SEPOLIA_PYTH_ADDRESS : hre.ethers.ZeroAddress);
   const nativeUsdFeed = process.env.PYTH_NATIVE_USD_FEED || process.env.MNT_USD_FEED || hre.ethers.ZeroHash;
   const deploymentState = readDeploymentState(hre.network.name);
   const aavePool = process.env.AAVE_POOL || deploymentState.mockAavePool || hre.ethers.ZeroAddress;
@@ -19,6 +23,9 @@ async function main() {
   console.log("Deployer:", deployer.address);
   console.log("Chain ID:", hre.network.config.chainId || "unknown");
   console.log("Pyth Oracle:", pythAddress);
+  if (hre.network.name === "mantleSepolia" && !process.env.PYTH) {
+    console.log("Pyth Oracle source: built-in Mantle Sepolia address");
+  }
   console.log("Native USD Feed:", nativeUsdFeed);
   console.log("Aave V3 Pool:", aavePool);
   console.log("Mock Aave Asset:", mockAaveAsset);
