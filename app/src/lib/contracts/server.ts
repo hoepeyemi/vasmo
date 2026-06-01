@@ -4,9 +4,26 @@ import { base, baseSepolia } from "viem/chains"
 import { InvoiceNFTABI, YieldVaultABI, AgentRouterABI, type Invoice, type Deposit, InvoiceStatus, Strategy } from "./abis"
 import { CHAIN_IDS, getContractAddresses } from "./addresses"
 
+const MANTLE_SEPOLIA_CHAIN = {
+  id: CHAIN_IDS.MANTLE_SEPOLIA,
+  name: "Mantle Sepolia",
+  nativeCurrency: { name: "Mantle", symbol: "MNT", decimals: 18 },
+  rpcUrls: {
+    default: { http: ["https://5003.rpc.thirdweb.com/"] },
+    public: { http: ["https://5003.rpc.thirdweb.com/"] },
+  },
+  blockExplorers: {
+    default: { name: "Mantle Explorer", url: "https://explorer.sepolia.mantle.xyz" },
+  },
+} as const
+
 // Get chain based on environment (defaults to Base Sepolia for testnet)
 const chainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID || CHAIN_IDS.BASE_SEPOLIA)
-const chain = chainId === CHAIN_IDS.BASE ? base : baseSepolia
+const chain = chainId === CHAIN_IDS.BASE
+  ? base
+  : chainId === CHAIN_IDS.MANTLE_SEPOLIA
+    ? MANTLE_SEPOLIA_CHAIN
+    : baseSepolia
 
 // Create public client for reading contracts
 export const publicClient = createPublicClient({
