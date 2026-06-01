@@ -4,11 +4,15 @@ pragma solidity ^0.8.26;
 import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
 
 contract MockPyth {
-    int64 public ethPrice = 200000000000;
+    mapping(bytes32 => int64) public prices;
     bool public shouldRevert = false;
 
     function setEthPrice(int64 _price) external {
-        ethPrice = _price;
+        prices[0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace] = _price;
+    }
+
+    function setPrice(bytes32 feedId, int64 _price) external {
+        prices[feedId] = _price;
     }
 
     function setShouldRevert(bool _shouldRevert) external {
@@ -24,9 +28,9 @@ contract MockPyth {
     function getPriceNoOlderThan(bytes32 id, uint256) external view returns (PythStructs.Price memory) {
         require(!shouldRevert, "Mock revert");
 
-        bytes32 ethUsdFeed = 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace;
-        if (id == ethUsdFeed) {
-            return PythStructs.Price({price: ethPrice, conf: 1000000, expo: -8, publishTime: block.timestamp});
+        int64 price = prices[id];
+        if (price != 0) {
+            return PythStructs.Price({price: price, conf: 1000000, expo: -8, publishTime: block.timestamp});
         }
 
         revert("Unknown price feed");

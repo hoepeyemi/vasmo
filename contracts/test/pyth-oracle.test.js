@@ -4,14 +4,16 @@ const { ethers } = require("hardhat");
 describe("PythOracle", function () {
   let oracle;
   let mockPyth;
+  const nativeFeed = ethers.keccak256(ethers.toUtf8Bytes("MNT/USD"));
 
   beforeEach(async function () {
     const MockPyth = await ethers.getContractFactory("MockPyth");
     mockPyth = await MockPyth.deploy();
     await mockPyth.waitForDeployment();
+    await mockPyth.setPrice(nativeFeed, 200000000000n);
 
     const PythOracle = await ethers.getContractFactory("PythOracle");
-    oracle = await PythOracle.deploy(await mockPyth.getAddress());
+    oracle = await PythOracle.deploy(await mockPyth.getAddress(), nativeFeed);
     await oracle.waitForDeployment();
   });
 
@@ -34,6 +36,7 @@ describe("PythOracle", function () {
   it("falls back when Pyth reverts", async function () {
     await mockPyth.setShouldRevert(true);
     expect(await oracle.getEthUsdPrice()).to.equal(200000000000n);
+    expect(await oracle.getNativeUsdPrice()).to.equal(200000000000n);
     expect(await oracle.isPythAvailable()).to.equal(false);
   });
 });

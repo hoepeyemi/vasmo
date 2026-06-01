@@ -16,6 +16,7 @@ contract PythOracle is Ownable {
     bytes32 public constant ETH_USD_FEED = 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace;
     bytes32 public constant USDC_USD_FEED = 0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a;
     bytes32 public constant BNB_USD_FEED = 0x2f95862b045670cd22bee3114c39763a4a08beeb663b145d283c31d7d1101c4f;
+    bytes32 public nativeUsdFeed;
 
     // Risk assessment data per invoice
     struct RiskData {
@@ -32,7 +33,6 @@ contract PythOracle is Ownable {
 
     // Fallback prices (used when Pyth is unavailable)
     int64 public fallbackEthPrice = 200000000000; // $2000 with 8 decimals
-    // BNB_USD_FEED available for BSC chain if needed
     bool public useFallback = false;
 
     // Circuit breaker - pause if too many failures
@@ -48,31 +48,26 @@ contract PythOracle is Ownable {
     event FallbackPricesUpdated(int64 ethPrice);
     event RiskAssessed(uint256 indexed tokenId, uint8 riskScore, uint8 paymentProbability, int64 collateralPrice);
 
-    constructor(address _pyth) Ownable(msg.sender) {
+    constructor(address _pyth, bytes32 _nativeUsdFeed) Ownable(msg.sender) {
+        require(_nativeUsdFeed != bytes32(0), "Invalid native feed");
         pyth = IPyth(_pyth);
+        nativeUsdFeed = _nativeUsdFeed;
     }
 
-    /// @notice Get the current ETH/USD price from Pyth with fallback
+    /// @notice Get the configured native/USD price from Pyth with fallback
     /// @return price The price with 8 decimal places
     function getEthUsdPrice() public view returns (int64) {
-        if (isFallbackActive()) {
-            return fallbackEthPrice;
-        }
-        try pyth.getPriceNoOlderThan(ETH_USD_FEED, MAX_PRICE_AGE) returns (PythStructs.Price memory price) {
-            return price.price;
-        } catch {
-            return fallbackEthPrice;
-        }
+        return getNativeUsdPrice();
     }
 
     /// @notice Get the native token price in USD from Pyth with fallback
-    /// @dev Uses ETH/USD on most chains. Override for non-ETH native tokens.
+    /// @dev Use ETH/USD on ETH-like chains, or MNT/USD on Mantle Sepolia.
     /// @return price The price with 8 decimal places
     function getNativeUsdPrice() public view returns (int64) {
         if (isFallbackActive()) {
             return fallbackEthPrice;
         }
-        try pyth.getPriceNoOlderThan(ETH_USD_FEED, MAX_PRICE_AGE) returns (PythStructs.Price memory price) {
+        try pyth.getPriceNoOlderThan(nativeUsdFeed, MAX_PRICE_AGE) returns (PythStructs.Price memory price) {
             return price.price;
         } catch {
             return fallbackEthPrice;
@@ -123,7 +118,7 @@ contract PythOracle is Ownable {
 
     /// @notice Check if prices are available from Pyth
     function isPythAvailable() public view returns (bool) {
-        try pyth.getPriceNoOlderThan(ETH_USD_FEED, MAX_PRICE_AGE) returns (PythStructs.Price memory) {
+        try pyth.getPriceNoOlderThan(nativeUsdFeed, MAX_PRICE_AGE) returns (PythStructs.Price memory) {
             return true;
         } catch {
             return false;
@@ -148,7 +143,7 @@ contract PythOracle is Ownable {
         pyth.updatePriceFeeds{value: fee}(priceUpdateData);
 
         // Get real-time collateral price
-        PythStructs.Price memory nativePrice = pyth.getPriceNoOlderThan(ETH_USD_FEED, MAX_PRICE_AGE);
+        PythStructs.Price memory nativePrice = pyth.getPriceNoOlderThan(nativeUsdFeed, MAX_PRICE_AGE);
         int64 collateralPrice = nativePrice.price;
 
         // Calculate collateral value in USD

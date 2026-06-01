@@ -52,6 +52,10 @@ npm run deploy:local
 # Deploy with optional external integrations
 npm run deploy:multichain
 
+# For Pyth on Mantle Sepolia, set the native feed ID first
+# $env:PYTH_NATIVE_USD_FEED="0x..."
+# If you leave it unset, deploy:multichain will stop instead of assuming ETH/USD.
+
 # Deploy a mock Aave pool you can point AAVE_POOL at
 npm run deploy:mock-aave
 

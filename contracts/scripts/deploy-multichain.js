@@ -9,6 +9,7 @@ async function main() {
     );
   }
   const pythAddress = process.env.PYTH || hre.ethers.ZeroAddress;
+  const nativeUsdFeed = process.env.PYTH_NATIVE_USD_FEED || process.env.MNT_USD_FEED || hre.ethers.ZeroHash;
   const deploymentState = readDeploymentState(hre.network.name);
   const aavePool = process.env.AAVE_POOL || deploymentState.mockAavePool || hre.ethers.ZeroAddress;
   const mockAaveAsset = process.env.MOCK_AAVE_ASSET || deploymentState.mockAaveAsset || hre.ethers.ZeroAddress;
@@ -18,6 +19,7 @@ async function main() {
   console.log("Deployer:", deployer.address);
   console.log("Chain ID:", hre.network.config.chainId || "unknown");
   console.log("Pyth Oracle:", pythAddress);
+  console.log("Native USD Feed:", nativeUsdFeed);
   console.log("Aave V3 Pool:", aavePool);
   console.log("Mock Aave Asset:", mockAaveAsset);
   console.log("Wrap Native MNT:", wrapNativeMnt);
@@ -42,7 +44,11 @@ async function main() {
 
   let oracleAddress = hre.ethers.ZeroAddress;
   if (pythAddress !== hre.ethers.ZeroAddress) {
-    const pythOracle = await PythOracle.deploy(pythAddress);
+    if (nativeUsdFeed === hre.ethers.ZeroHash) {
+      throw new Error("Set PYTH_NATIVE_USD_FEED (or MNT_USD_FEED) before deploying PythOracle.");
+    }
+
+    const pythOracle = await PythOracle.deploy(pythAddress, nativeUsdFeed);
     await pythOracle.waitForDeployment();
     oracleAddress = await pythOracle.getAddress();
     console.log("PythOracle deployed at:", oracleAddress);
@@ -120,6 +126,7 @@ async function main() {
     privacyRegistry: await privacyRegistry.getAddress(),
     agentRouter: await agentRouter.getAddress(),
     pythOracle: oracleAddress,
+    nativeUsdFeed,
     aaveYieldSource: yieldSourceAddress,
     mockAavePool: resolvedAavePool,
   });
