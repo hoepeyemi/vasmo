@@ -8,6 +8,7 @@ import {
 } from 'wagmi/chains';
 import { defineChain } from 'viem';
 import { injected, walletConnect } from '@wagmi/connectors';
+import { createMantleSepoliaTransport } from './mantle-rpc';
 
 export {
   getContractAddresses,
@@ -49,7 +50,10 @@ export const mantleSepolia = defineChain({
   id: 5003,
   name: 'Mantle Sepolia',
   nativeCurrency: { name: 'Mantle', symbol: 'MNT', decimals: 18 },
-  rpcUrls: { default: { http: ['https://5003.rpc.thirdweb.com/'] } },
+  rpcUrls: {
+    default: { http: ['https://rpc.sepolia.mantle.xyz'] },
+    public: { http: ['https://rpc.sepolia.mantle.xyz', 'https://mantle-sepolia.drpc.org', 'https://5003.rpc.thirdweb.com/'] },
+  },
   blockExplorers: {
     default: {
       name: 'Mantle Explorer',
@@ -90,7 +94,7 @@ export const config = createConfig({
     [polygon.id]: http(process.env.NEXT_PUBLIC_POLYGON_RPC || undefined),
     [skaleEuropa.id]: http('https://mainnet.skalenodes.com/v1/elated-tan-skat'),
     // Testnets
-    [mantleSepolia.id]: http(process.env.NEXT_PUBLIC_MANTLE_SEPOLIA_RPC || 'https://5003.rpc.thirdweb.com/'),
+    [mantleSepolia.id]: createMantleSepoliaTransport(),
     // Local
     [anvil.id]: http('http://127.0.0.1:8545'),
   },

@@ -117,7 +117,8 @@ contract InvoiceNFT is ERC721, ERC721Enumerable, Ownable {
             paymentProbability: 50
         });
 
-        _safeMint(msg.sender, tokenId);
+        // Use a plain mint so contract wallets and smart accounts can receive invoices.
+        _mint(msg.sender, tokenId);
 
         emit InvoiceMinted(tokenId, msg.sender, dataCommitment, dueDate);
     }

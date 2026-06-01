@@ -38,7 +38,7 @@ interface QuickBooksInvoice {
 function MintInvoiceContent() {
   const searchParams = useSearchParams()
   const { address, isConnected } = useAccount()
-  const { mint, isPending, isConfirming, isSuccess, hash, mintedTokenId, confirmationTimedOut, error } = useMintInvoice()
+  const { mint, isPending, isConfirming, isSuccess, hash, mintedTokenId, confirmationTimedOut, error, mintLogs, forceSettle, isForceChecking } = useMintInvoice()
 
   const [step, setStep] = useState(1)
   const [selectedQBInvoice, setSelectedQBInvoice] = useState<QuickBooksInvoice | null>(null)
@@ -205,7 +205,7 @@ function MintInvoiceContent() {
             {hash && (
               <div className="mb-8">
                 <a
-                  href={`https://etherscan.io/tx/${hash}`}
+                  href={`https://explorer.sepolia.mantle.xyz/tx/${hash}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-xs text-[#10b981] hover:underline"
@@ -469,6 +469,40 @@ function MintInvoiceContent() {
                   Review carefully. Once minted, invoice details cannot be edited.
                 </div>
               </div>
+
+              {/* Mint Console */}
+              <div className="p-4 bg-[#050505] rounded border border-[#1f1f1f]">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] text-[#10b981] uppercase tracking-wider font-semibold">console</span>
+                  <span className="text-[10px] text-[#666666]">
+                    {isPending ? "wallet" : isConfirming ? "chain" : isSuccess ? "done" : "idle"}
+                  </span>
+                </div>
+                <div className="max-h-40 overflow-y-auto space-y-1 font-mono text-[11px] leading-5">
+                  {mintLogs.length === 0 ? (
+                    <div className="text-[#666666]">waiting for mint actions...</div>
+                  ) : (
+                    mintLogs.map((entry) => (
+                      <div key={entry.id} className="flex gap-3">
+                        <span className="text-[#444444] shrink-0">{entry.time}</span>
+                        <span
+                          className={
+                            entry.level === "success"
+                              ? "text-[#10b981]"
+                              : entry.level === "warning"
+                                ? "text-[#f59e0b]"
+                                : entry.level === "error"
+                                  ? "text-[#ef4444]"
+                                  : "text-[#e5e5e5]"
+                          }
+                        >
+                          {entry.message}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-between gap-3">
@@ -486,6 +520,18 @@ function MintInvoiceContent() {
                   "mint invoice nft"
                 )}
               </Button>
+              {hash && !isSuccess && (
+                <Button variant="secondary" onClick={() => forceSettle()} disabled={isForceChecking}>
+                  {isForceChecking ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      checking chain...
+                    </>
+                  ) : (
+                    "force settle"
+                  )}
+                </Button>
+              )}
             </div>
 
             {hash && (

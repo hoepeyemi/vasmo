@@ -147,7 +147,7 @@ This project succeeds if:
 | Setting | Value |
 |---------|-------|
 | Network Name | Mantle Sepolia |
-| RPC URL | https://5003.rpc.thirdweb.com/ |
+| RPC URL | https://rpc.sepolia.mantle.xyz |
 | Chain ID | 5003 |
 | Symbol | MNT |
 | Explorer | https://explorer.sepolia.mantle.xyz |

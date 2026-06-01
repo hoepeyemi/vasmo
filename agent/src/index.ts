@@ -80,8 +80,58 @@ function readDeploymentDefaults(networkName: string): Partial<ContractAddresses>
   }
 }
 
+function uniqueUrls(urls: Array<string | undefined>): string[] {
+  return [...new Set(urls.filter((url): url is string => Boolean(url)))];
+}
+
+const MANTLE_SEPOLIA_RPC_FALLBACKS = uniqueUrls([
+  process.env.RPC_URL,
+  process.env.CHAIN_RPC_URL,
+  process.env.MANTLE_RPC_URL,
+  process.env.MANTLE_SEPOLIA_RPC,
+  process.env.MANTLE_SEPOLIA_RPC_SELECTED,
+  process.env.MANTLE_SEPOLIA_RPC_FALLBACK_1,
+  process.env.MANTLE_SEPOLIA_RPC_FALLBACK_2,
+  'https://rpc.sepolia.mantle.xyz',
+  'https://mantle-sepolia.drpc.org',
+  'https://5003.rpc.thirdweb.com/',
+]);
+
+async function selectWorkingRpcUrl(urls: string[]): Promise<string> {
+  const timeoutMs = 5000;
+
+  for (const url of urls) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'eth_chainId',
+          params: [],
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (response.ok) {
+        const json = await response.json().catch(() => null);
+        if (json?.result) {
+          return url;
+        }
+      }
+    } catch {
+      // Try the next fallback.
+    }
+  }
+
+  return urls[0] || 'http://127.0.0.1:8545';
+}
+
 // Load configuration from environment
-const RPC_URL = process.env.RPC_URL || process.env.CHAIN_RPC_URL || process.env.MANTLE_RPC_URL || 'https://5003.rpc.thirdweb.com/';
 const PRIVATE_KEY = process.env.AGENT_PRIVATE_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const WS_PORT = parseInt(process.env.WS_PORT || '8080');
@@ -104,6 +154,8 @@ const ADDRESSES: ContractAddresses = {
 const isProduction = !!ADDRESSES.pythOracle || !!ADDRESSES.aaveYieldSource;
 
 async function main() {
+  const RPC_URL = await selectWorkingRpcUrl(MANTLE_SEPOLIA_RPC_FALLBACKS);
+
   console.log('');
   console.log('  ███████╗ █████╗ ██╗  ██╗████████╗ ██████╗ ██████╗ ██╗   ██╗');
   console.log('  ██╔════╝██╔══██╗██║ ██╔╝╚══██╔══╝██╔═══██╗██╔══██╗╚██╗ ██╔╝');

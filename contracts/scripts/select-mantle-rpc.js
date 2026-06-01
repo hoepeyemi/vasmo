@@ -7,9 +7,12 @@ const OUT_FILE = path.join(__dirname, "..", ".env.local");
 
 const CANDIDATES = [
   process.env.MANTLE_SEPOLIA_RPC,
-  "https://5003.rpc.thirdweb.com/",
-  "https://mantle-sepolia.drpc.org",
+  process.env.MANTLE_SEPOLIA_RPC_SELECTED,
+  process.env.MANTLE_SEPOLIA_RPC_FALLBACK_1,
+  process.env.MANTLE_SEPOLIA_RPC_FALLBACK_2,
   "https://rpc.sepolia.mantle.xyz",
+  "https://mantle-sepolia.drpc.org",
+  "https://5003.rpc.thirdweb.com/",
   "https://mantle-sepolia.gateway.tenderly.co",
   "https://testnet-rpc.etherspot.io/v1/5003",
 ].filter(Boolean);

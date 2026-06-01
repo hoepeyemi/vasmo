@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useRef } from 'react'
 import { useAccount, useChainId, useSwitchChain } from 'wagmi'
 import { Button } from '@/components/ui/button'
 import { AlertCircle } from 'lucide-react'
@@ -9,8 +10,23 @@ export function NetworkCheck({ children }: { children: React.ReactNode }) {
   const { isConnected } = useAccount()
   const chainId = useChainId()
   const { switchChain, isPending } = useSwitchChain()
+  const hasAutoSwitched = useRef(false)
 
   const isWrongNetwork = isConnected && !(SUPPORTED_CHAINS as readonly number[]).includes(chainId)
+
+  useEffect(() => {
+    if (!isWrongNetwork || hasAutoSwitched.current) {
+      return
+    }
+
+    const target = SUPPORTED_CHAINS[0]
+    if (!target) {
+      return
+    }
+
+    hasAutoSwitched.current = true
+    switchChain({ chainId: target })
+  }, [isWrongNetwork, switchChain])
 
   if (!isWrongNetwork) {
     return <>{children}</>

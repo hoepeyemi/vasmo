@@ -3,14 +3,15 @@ import { createPublicClient, http, type Address } from "viem"
 import { base } from "viem/chains"
 import { InvoiceNFTABI, YieldVaultABI, AgentRouterABI, type Invoice, type Deposit, InvoiceStatus, Strategy } from "./abis"
 import { CHAIN_IDS, getContractAddresses } from "./addresses"
+import { createMantleSepoliaTransport, getMantleSepoliaRpcUrls } from "../mantle-rpc"
 
 const MANTLE_SEPOLIA_CHAIN = {
   id: CHAIN_IDS.MANTLE_SEPOLIA,
   name: "Mantle Sepolia",
   nativeCurrency: { name: "Mantle", symbol: "MNT", decimals: 18 },
   rpcUrls: {
-    default: { http: ["https://5003.rpc.thirdweb.com/"] },
-    public: { http: ["https://5003.rpc.thirdweb.com/"] },
+    default: { http: getMantleSepoliaRpcUrls() },
+    public: { http: getMantleSepoliaRpcUrls() },
   },
   blockExplorers: {
     default: { name: "Mantle Explorer", url: "https://explorer.sepolia.mantle.xyz" },
@@ -28,7 +29,9 @@ const chain = chainId === CHAIN_IDS.BASE
 // Create public client for reading contracts
 export const publicClient = createPublicClient({
   chain,
-  transport: http(process.env.NEXT_PUBLIC_RPC_URL || chain.rpcUrls.default.http[0]),
+  transport: chain.id === CHAIN_IDS.MANTLE_SEPOLIA
+    ? createMantleSepoliaTransport()
+    : http(process.env.NEXT_PUBLIC_RPC_URL || chain.rpcUrls.default.http[0]),
 })
 
 const addresses = getContractAddresses(chainId)

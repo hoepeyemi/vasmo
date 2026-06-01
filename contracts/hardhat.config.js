@@ -37,6 +37,16 @@ loadEnvFile(path.join(__dirname, ".env"));
 loadEnvFile(path.join(__dirname, ".env.local"));
 loadEnvFile(path.join(__dirname, "..", ".env"));
 
+const MANTLE_SEPOLIA_RPC_FALLBACKS = [
+  process.env.MANTLE_SEPOLIA_RPC,
+  process.env.MANTLE_SEPOLIA_RPC_SELECTED,
+  process.env.MANTLE_SEPOLIA_RPC_FALLBACK_1,
+  process.env.MANTLE_SEPOLIA_RPC_FALLBACK_2,
+  "https://rpc.sepolia.mantle.xyz",
+  "https://mantle-sepolia.drpc.org",
+  "https://5003.rpc.thirdweb.com/",
+].filter(Boolean);
+
 const optimizerSettings = {
   optimizer: {
     enabled: true,
@@ -61,7 +71,8 @@ module.exports = {
       url:
         process.env.MANTLE_SEPOLIA_RPC ||
         process.env.MANTLE_SEPOLIA_RPC_SELECTED ||
-        "https://5003.rpc.thirdweb.com/",
+        MANTLE_SEPOLIA_RPC_FALLBACKS[0] ||
+        "https://rpc.sepolia.mantle.xyz",
       chainId: 5003,
       accounts: PRIVATE_KEY,
     },

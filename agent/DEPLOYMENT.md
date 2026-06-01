@@ -24,7 +24,7 @@ PYTH_ORACLE_ADDRESS=0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3
 
 **Optional (but recommended):**
 ```
-MANTLE_RPC_URL=https://5003.rpc.thirdweb.com/
+MANTLE_RPC_URL=https://rpc.sepolia.mantle.xyz
 WS_PORT=8080
 NODE_ENV=production
 AGENT_PRIVATE_KEY=<your-agent-wallet-private-key>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, usePublicClient } from 'wagmi';
 import { parseEther, keccak256, encodePacked, toHex } from 'viem';
 import { getContractAddresses, areContractsDeployed } from '@/lib/wagmi';
 import { InvoiceNFTABI } from '@/lib/abi';
@@ -14,8 +14,9 @@ const INITIAL_FORM_STATE = {
 };
 
 export function InvoiceForm() {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const chainId = useChainId();
+  const publicClient = usePublicClient();
   const contracts = getContractAddresses(chainId);
   const contractsDeployed = areContractsDeployed(chainId);
 
@@ -73,12 +74,24 @@ export function InvoiceForm() {
     // Due date as Unix timestamp
     const dueDate = BigInt(Math.floor(new Date(formData.dueDate).getTime() / 1000));
 
-    writeContract({
-      address: contracts.invoiceNFT,
-      abi: InvoiceNFTABI,
-      functionName: 'mint',
-      args: [dataCommitment, amountCommitment, dueDate],
-    });
+    try {
+      const simulation = await publicClient?.simulateContract({
+        address: contracts.invoiceNFT,
+        abi: InvoiceNFTABI,
+        functionName: 'mint',
+        args: [dataCommitment, amountCommitment, dueDate],
+        account: address,
+      });
+
+      if (!simulation) {
+        throw new Error('Unable to simulate mint transaction');
+      }
+
+      writeContract(simulation.request);
+    } catch (err) {
+      console.error('Mint simulation failed', err);
+      return;
+    }
 
     // Store salt locally for demo purposes
     // SECURITY NOTE: In production, use one of these alternatives:

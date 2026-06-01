@@ -47,7 +47,7 @@ nano .env
 
 **Minimum required (for read-only mode):**
 ```bash
-MANTLE_RPC_URL=https://5003.rpc.thirdweb.com/
+MANTLE_RPC_URL=https://rpc.sepolia.mantle.xyz
 INVOICE_NFT_ADDRESS=0x018ee8F363421016177DbC8F9492fe2a1C720e29
 YIELD_VAULT_ADDRESS=0x7f51D3B234E4c20959A1f6e91D3B852EE16c65A6
 AGENT_ROUTER_ADDRESS=0x4430248F3b2304F946f08c43A06C3451657FD658
@@ -81,7 +81,7 @@ pnpm dev
   Autonomous Invoice Yield Optimization on Mantle
 
 ============================================================
-  📡 RPC: https://5003.rpc.thirdweb.com/
+  📡 RPC: https://rpc.sepolia.mantle.xyz
   🔌 WebSocket: ws://localhost:8080
   🔑 Wallet: ✅ Configured
   🤖 LLM: ✅ AI (Real)
@@ -114,7 +114,7 @@ Visit `http://localhost:3000/dashboard/agent` to see the agent in action.
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `MANTLE_RPC_URL` | No | `https://5003.rpc.thirdweb.com/` | Mantle Sepolia RPC endpoint |
+| `MANTLE_RPC_URL` | No | `https://rpc.sepolia.mantle.xyz` | Mantle Sepolia RPC endpoint |
 | `AGENT_PRIVATE_KEY` | No | - | Wallet private key (required for auto-execution) |
 | `ANTHROPIC_API_KEY` | No | - | LLM API key (uses templates if missing) |
 | `WS_PORT` | No | `8080` | WebSocket server port |
@@ -232,7 +232,7 @@ const ws = new WebSocket('ws://localhost:8080') // ✅ Match WS_PORT
 **Agent wallet needs MNT:**
 ```bash
 # Check balance
-cast balance $AGENT_ADDRESS --rpc-url https://5003.rpc.thirdweb.com/ --ether
+cast balance $AGENT_ADDRESS --rpc-url https://rpc.sepolia.mantle.xyz --ether
 
 # Fund from faucet
 # https://faucet.sepolia.mantle.xyz/

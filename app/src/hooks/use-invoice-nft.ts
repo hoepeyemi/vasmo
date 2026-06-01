@@ -1,10 +1,19 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount, useChainId } from "wagmi"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount, useChainId, usePublicClient } from "wagmi"
 import { InvoiceNFTABI, type Invoice, InvoiceStatus } from "@/lib/contracts/abis"
 import { getInvoiceNFTAddress } from "@/lib/contracts/addresses"
 import { keccak256, encodePacked, toHex, decodeEventLog } from "viem"
+
+type MintLogLevel = "info" | "success" | "warning" | "error"
+
+type MintLogEntry = {
+  id: number
+  time: string
+  level: MintLogLevel
+  message: string
+}
 
 export function useInvoiceNFT() {
   const chainId = useChainId()
@@ -120,9 +129,20 @@ export function useInvoice(tokenId: bigint | number | undefined) {
 
 export function useMintInvoice() {
   const chainId = useChainId()
+  const { address } = useAccount()
   const contractAddress = getInvoiceNFTAddress(chainId)
+  const publicClient = usePublicClient()
   const [confirmationTimedOut, setConfirmationTimedOut] = useState(false)
   const [confirmationStartedAt, setConfirmationStartedAt] = useState<number | null>(null)
+  const [mintLogs, setMintLogs] = useState<MintLogEntry[]>([])
+  const [forcedReceipt, setForcedReceipt] = useState<any | null>(null)
+  const [isForceChecking, setIsForceChecking] = useState(false)
+  const lastPendingRef = useRef(false)
+  const lastConfirmingRef = useRef(false)
+  const lastSuccessRef = useRef(false)
+  const lastErrorRef = useRef<string | null>(null)
+  const lastHashRef = useRef<string | null>(null)
+  const lastForceCheckHashRef = useRef<string | null>(null)
 
   const { writeContract, data: hash, isPending, error } = useWriteContract()
 
@@ -131,16 +151,135 @@ export function useMintInvoice() {
     confirmations: 1,
   })
 
+  const resolvedReceipt = receipt ?? forcedReceipt
+  const resolvedIsSuccess = isSuccess || Boolean(forcedReceipt)
+
+  const appendMintLog = useCallback((level: MintLogLevel, message: string) => {
+    const entry: MintLogEntry = {
+      id: Date.now() + Math.floor(Math.random() * 1000),
+      time: new Date().toLocaleTimeString("en-US", {
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
+      level,
+      message,
+    }
+
+    setMintLogs((prev) => [...prev.slice(-11), entry])
+
+    const prefix = `[mint:${level}]`
+    if (level === "error") {
+      console.error(prefix, message)
+    } else if (level === "warning") {
+      console.warn(prefix, message)
+    } else {
+      console.log(prefix, message)
+    }
+  }, [])
+
   useEffect(() => {
     if (hash) {
       setConfirmationStartedAt(Date.now())
       setConfirmationTimedOut(false)
+      setForcedReceipt(null)
+      if (lastHashRef.current !== hash) {
+        appendMintLog("info", `tx submitted: ${hash}`)
+        lastHashRef.current = hash
+      }
       return
     }
 
     setConfirmationStartedAt(null)
     setConfirmationTimedOut(false)
+    setForcedReceipt(null)
+    lastHashRef.current = null
+    lastForceCheckHashRef.current = null
   }, [hash])
+
+  useEffect(() => {
+    if (isPending && !lastPendingRef.current) {
+      appendMintLog("info", "wallet signature requested")
+      lastPendingRef.current = true
+    }
+
+    if (!isPending) {
+      lastPendingRef.current = false
+    }
+  }, [isPending])
+
+  useEffect(() => {
+    if (isConfirming && !lastConfirmingRef.current) {
+      appendMintLog("info", "waiting for blockchain confirmation")
+      lastConfirmingRef.current = true
+    }
+
+    if (!isConfirming) {
+      lastConfirmingRef.current = false
+    }
+  }, [isConfirming])
+
+  useEffect(() => {
+    if (confirmationTimedOut) {
+      appendMintLog("warning", "transaction still pending after 60s")
+    }
+  }, [confirmationTimedOut])
+
+  const forceSettle = useCallback(async () => {
+    if (!hash || !publicClient || isForceChecking) {
+      return false
+    }
+
+    setIsForceChecking(true)
+
+    try {
+      appendMintLog("info", "checking chain for mined receipt")
+      const onChainReceipt = await publicClient.getTransactionReceipt({
+        hash: hash as `0x${string}`,
+      })
+
+      if (!onChainReceipt) {
+        appendMintLog("warning", "transaction not mined yet")
+        return false
+      }
+
+      setForcedReceipt(onChainReceipt)
+      appendMintLog("success", "receipt found on-chain, settling UI")
+      return true
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      appendMintLog("warning", `chain check failed: ${message}`)
+      return false
+    } finally {
+      setIsForceChecking(false)
+    }
+  }, [hash, publicClient, isForceChecking, appendMintLog])
+
+  useEffect(() => {
+    if (!confirmationTimedOut || resolvedIsSuccess || !hash) {
+      return
+    }
+
+    if (lastForceCheckHashRef.current === hash) {
+      return
+    }
+
+    lastForceCheckHashRef.current = hash
+    void forceSettle()
+  }, [confirmationTimedOut, resolvedIsSuccess, hash, forceSettle])
+
+  useEffect(() => {
+    const message = error instanceof Error ? error.message : error ? String(error) : null
+    if (message && message !== lastErrorRef.current) {
+      appendMintLog("error", message)
+      lastErrorRef.current = message
+    }
+
+    if (!message) {
+      lastErrorRef.current = null
+    }
+  }, [error])
 
   useEffect(() => {
     if (!confirmationStartedAt || isSuccess || !isConfirming) {
@@ -155,10 +294,10 @@ export function useMintInvoice() {
   }, [confirmationStartedAt, isConfirming, isSuccess])
 
   // Extract token ID from transaction logs
-  const mintedTokenId = receipt?.logs
+  const mintedTokenId = resolvedReceipt?.logs
     ? (() => {
         try {
-          for (const log of receipt.logs) {
+          for (const log of resolvedReceipt.logs) {
             try {
               const decoded = decodeEventLog({
                 abi: InvoiceNFTABI,
@@ -179,12 +318,26 @@ export function useMintInvoice() {
       })()
     : null
 
+  useEffect(() => {
+    if (resolvedIsSuccess && !lastSuccessRef.current) {
+      appendMintLog("success", `transaction confirmed on-chain${mintedTokenId ? `, token #${mintedTokenId}` : ""}`)
+      lastSuccessRef.current = true
+    }
+
+    if (!resolvedIsSuccess) {
+      lastSuccessRef.current = false
+    }
+  }, [resolvedIsSuccess, mintedTokenId, appendMintLog])
+
   const mint = async (params: {
     invoiceData: string
     amount: string
     dueDate: Date
     salt?: `0x${string}`
   }) => {
+    setMintLogs([])
+    appendMintLog("info", "building invoice commitments")
+
     // Generate salt if not provided
     const salt = params.salt || (toHex(crypto.getRandomValues(new Uint8Array(32))) as `0x${string}`)
 
@@ -199,12 +352,31 @@ export function useMintInvoice() {
     // Convert due date to unix timestamp
     const dueDateUnix = BigInt(Math.floor(params.dueDate.getTime() / 1000))
 
-    writeContract({
-      address: contractAddress,
-      abi: InvoiceNFTABI,
-      functionName: "mint",
-      args: [dataCommitment, amountCommitment, dueDateUnix],
-    })
+    appendMintLog("info", "sending mint transaction")
+    try {
+      if (!address) {
+        throw new Error("Wallet address unavailable")
+      }
+
+      const simulation = await publicClient?.simulateContract({
+        address: contractAddress,
+        abi: InvoiceNFTABI,
+        functionName: "mint",
+        args: [dataCommitment, amountCommitment, dueDateUnix],
+        account: address,
+      })
+
+      if (!simulation) {
+        throw new Error("Unable to simulate mint transaction")
+      }
+
+      await writeContract(simulation.request)
+      appendMintLog("info", "transaction broadcast")
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Mint simulation failed"
+      appendMintLog("error", message)
+      throw error
+    }
 
     // Return salt so it can be stored for later verification
     return { salt, dataCommitment, amountCommitment }
@@ -214,11 +386,14 @@ export function useMintInvoice() {
     mint,
     hash,
     isPending,
-    isConfirming,
-    isSuccess,
+    isConfirming: isConfirming && !forcedReceipt,
+    isSuccess: resolvedIsSuccess,
     mintedTokenId,
     confirmationTimedOut,
     error,
+    mintLogs,
+    forceSettle,
+    isForceChecking,
   }
 }
 
