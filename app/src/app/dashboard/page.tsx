@@ -31,19 +31,6 @@ interface InvoiceResponse {
   }
 }
 
-function strategyNameFromCode(code?: number) {
-  switch (code) {
-    case 0:
-      return "Hold"
-    case 1:
-      return "Conservative"
-    case 2:
-      return "Aggressive"
-    default:
-      return "Unknown"
-  }
-}
-
 interface InvoiceDisplay {
   id: string
   tokenId: string
@@ -51,11 +38,28 @@ interface InvoiceDisplay {
   amountRaw: number
   dueDate: string
   daysUntilDue: number
-  strategy: strategyLabel.toLowerCase(),
-            apy: strategyLabel === "Aggressive" ? `${aggressiveAPY}%` : strategyLabel === "Conservative" ? `${conservativeAPY}%` : "—",
-            accruedYield: string
+  strategy: string
+  apy: string
+  accruedYield: string
   status: string
   riskScore: number
+}
+
+function strategyLabelFrom(inv: InvoiceResponse): string {
+  if (typeof inv.deposit?.strategy === "string" && inv.deposit.strategy.length > 0) {
+    return inv.deposit.strategy.toLowerCase()
+  }
+
+  switch (inv.deposit?.strategyCode) {
+    case 0:
+      return "hold"
+    case 1:
+      return "conservative"
+    case 2:
+      return "aggressive"
+    default:
+      return "—"
+  }
 }
 
 export default function Dashboard() {
@@ -64,7 +68,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
 
-  const { address, isConnected } = useAccount()
+  const { isConnected } = useAccount()
   const { totalInvoices } = useInvoiceNFT()
   const { tvl, totalYield, activeDepositsCount, conservativeAPY, aggressiveAPY } = useYieldVault()
 
@@ -89,19 +93,18 @@ export default function Dashboard() {
           const dueDate = new Date(inv.dueDate)
           const daysUntilDue = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
           const principal = inv.deposit ? Number(formatUnits(BigInt(inv.deposit.principal), 18)) : 0
-          const strategyLabel = typeof inv.deposit?.strategy === "string"
-            ? inv.deposit.strategy
-            : strategyNameFromCode(inv.deposit?.strategyCode)
+          const strategy = strategyLabelFrom(inv)
           const isInYield = Boolean(inv.deposit) || inv.status === "InYield"
+
           return {
-            id: `INV-${String(inv.tokenId).padStart(4, '0')}`,
+            id: `INV-${String(inv.tokenId).padStart(4, "0")}`,
             tokenId: inv.tokenId,
             amount: `$${principal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
             amountRaw: principal,
             dueDate: dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
             daysUntilDue,
-            strategy: strategyLabel.toLowerCase(),
-            apy: strategyLabel === "Aggressive" ? `${aggressiveAPY}%` : strategyLabel === "Conservative" ? `${conservativeAPY}%` : "—",
+            strategy,
+            apy: strategy === "aggressive" ? `${aggressiveAPY}%` : strategy === "conservative" ? `${conservativeAPY}%` : "—",
             accruedYield: inv.deposit ? `+$${Number(formatUnits(BigInt(inv.deposit.accruedYield), 18)).toFixed(2)}` : "$0.00",
             status: isInYield ? "InYield" : inv.status,
             riskScore: inv.riskScore || 75,
@@ -146,9 +149,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#0a0a0a] bg-grid noise-overlay scan-line pb-8">
       <TerminalNav />
 
-      {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-8">
-        {/* Page Header */}
         <div className="flex items-start justify-between mb-8 stagger-1">
           <div>
             <div className="text-[10px] text-[#666666] uppercase tracking-wider mb-1">
@@ -167,7 +168,6 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* Stats Grid - Bloomberg style */}
         <div className="stats-grid grid-cols-4 mb-6 stagger-2">
           <div className="stat-cell">
             <div className="stat-label flex items-center gap-2">
@@ -200,14 +200,11 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Mini Activity Feed */}
         <div className="terminal-card p-4 mb-8 stagger-3">
           <MiniActivityFeed />
         </div>
 
-        {/* Invoices Table */}
         <div className="border border-[#1f1f1f] rounded overflow-hidden stagger-4">
-          {/* Table Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#1f1f1f] bg-[#111111]">
             <span className="text-xs font-semibold">invoices</span>
             <div className="flex items-center gap-2">
@@ -225,7 +222,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Table Content */}
           {isLoading ? (
             <div className="p-12 text-center">
               <div className="inline-block w-4 h-4 border-2 border-[#1f1f1f] border-t-[#10b981] rounded-full animate-spin mb-3" />
@@ -282,9 +278,9 @@ export default function Dashboard() {
                     <td className="tabular-nums">{invoice.apy}</td>
                     <td className="text-[#10b981] font-semibold tabular-nums">{invoice.accruedYield}</td>
                     <td>
-                      <span className={`status-badge ${invoice.status === 'InYield' ? 'status-active' : 'status-pending'}`}>
+                      <span className={`status-badge ${invoice.status === "InYield" ? "status-active" : "status-pending"}`}>
                         <span className="status-dot" />
-                        {invoice.status === 'InYield' ? 'active' : invoice.status === 'Minted' ? 'pending' : invoice.status.toLowerCase()}
+                        {invoice.status === "InYield" ? "active" : invoice.status === "Minted" ? "pending" : invoice.status.toLowerCase()}
                       </span>
                     </td>
                     <td className="text-right">
@@ -296,10 +292,9 @@ export default function Dashboard() {
             </table>
           )}
 
-          {/* Table Footer */}
           {filteredInvoices.length > 0 && (
             <div className="flex items-center justify-between px-4 py-3 border-t border-[#1f1f1f] bg-[#111111] text-[11px] text-[#666666]">
-              <span>{filteredInvoices.length} invoice{filteredInvoices.length !== 1 ? 's' : ''} | {totalInvoices} total minted</span>
+              <span>{filteredInvoices.length} invoice{filteredInvoices.length !== 1 ? "s" : ""} | {totalInvoices} total minted</span>
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] status-pulse" />
                 agent monitoring
@@ -309,11 +304,7 @@ export default function Dashboard() {
         </div>
       </main>
 
-      {/* Status Bar */}
       <StatusBar status="online" />
     </div>
   )
 }
-
-
-
