@@ -9,151 +9,11 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
-  # ============ Contracts ============
-  contracts:
-    name: Contracts (Foundry)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: contracts
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
-
-      - name: Check formatting
-        run: forge fmt --check
-
-      - name: Build contracts
-        run: forge build
-
-      - name: Run tests
-        run: forge test -vvv
-
-  # ============ Frontend App ============
-  app:
-    name: Frontend (Next.js)
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Type check
-        run: cd app && pnpm tsc --noEmit
-
-      - name: Lint
-        run: cd app && pnpm lint --max-warnings 0 || true
-
-      - name: Build
-        run: cd app && pnpm build
-        env:
-          NEXT_PUBLIC_INVOICE_NFT_ADDRESS: '0x0000000000000000000000000000000000000001'
-          NEXT_PUBLIC_YIELD_VAULT_ADDRESS: '0x0000000000000000000000000000000000000002'
-          NEXT_PUBLIC_AGENT_ROUTER_ADDRESS: '0x0000000000000000000000000000000000000003'
-
-  # ============ Agent Service ============
   agent:
-    name: Agent (TypeScript)
+    name: Agent (TypeScript + Docker Deploy)
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Type check
-        run: cd agent && pnpm tsc --noEmit
-
-      - name: Run tests
-        run: cd agent && pnpm test
-
-  # ============ Pages Deployment ============
-  deploy-pages:
-    name: Deploy Pages
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    needs: [contracts]
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Build
-        working-directory: app
-        env:
-          GITHUB_PAGES: "true"
-          NEXT_PUBLIC_NETWORK_MODE: testnet
-          NEXT_PUBLIC_CHAIN_ID: "5003"
-          NEXT_PUBLIC_MANTLE_SEPOLIA_RPC: https://5003.rpc.thirdweb.com/
-          NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: c812450038cb25050edbdce20ef65c61
-        run: pnpm build
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: app/out
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-  # ============ Agent Docker Deployment ============
-  docker-agent:
-    name: Deploy Agent (Docker)
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    needs: [contracts]
     env:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME_PROD }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN_PROD }}
@@ -165,16 +25,39 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Type check
+        run: cd agent && pnpm tsc --noEmit
+
+      - name: Run tests
+        run: cd agent && pnpm test
+
+      - name: Build agent
+        run: cd agent && pnpm build
 
       - name: Login to Docker Hub
+        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ env.DOCKER_PASSWORD }}
 
       - name: Build and push agent image
+        if: github.event_name == 'push'
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -185,6 +68,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=vasmo-agent
 
       - name: Deploy to Ubuntu server
+        if: github.event_name == 'push'
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ env.HOST }}
@@ -209,7 +93,7 @@ jobs:
             sudo docker stop vasmo-agent || true
             sudo docker rm vasmo-agent || true
 
-            echo "Pulling latest images..."
+            echo "Pulling latest image..."
             sudo docker pull ${{ env.AGENT_IMAGE }}
 
             echo "Starting agent..."
@@ -238,6 +122,7 @@ jobs:
             echo "Deployment completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 
       - name: Post-deploy verification
+        if: github.event_name == 'push' && success()
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ env.HOST }}
