@@ -1,4 +1,4 @@
-name: Build and Deploy vasmo (web + agent)
+name: Build and Deploy vasmo Agent
 
 on:
   push:
@@ -13,7 +13,6 @@ env:
   HOST: ${{ secrets.SSH_HOST_TEMP }}
   HOST_USERNAME: ${{ secrets.SSH_USERNAME_TEMP }}
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_TEMP }}
-  WEB_IMAGE: ${{ secrets.DOCKER_USERNAME_PROD }}/vasmo-web:latest
   AGENT_IMAGE: ${{ secrets.DOCKER_USERNAME_PROD }}/vasmo-agent:latest
 
 jobs:
@@ -34,24 +33,6 @@ jobs:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ env.DOCKER_PASSWORD }}
 
-      - name: Build web image (PR validation)
-        if: github.event_name == 'pull_request'
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile.web
-          push: false
-          tags: vasmo-web:pr
-          build-args: |
-            NEXT_PUBLIC_NETWORK_MODE=testnet
-            NEXT_PUBLIC_CHAIN_ID=5003
-            NEXT_PUBLIC_MANTLE_SEPOLIA_RPC=https://rpc.sepolia.mantle.xyz
-            NEXT_PUBLIC_MANTLE_SEPOLIA_RPC_FALLBACK_1=https://mantle-sepolia.drpc.org
-            NEXT_PUBLIC_MANTLE_SEPOLIA_RPC_FALLBACK_2=https://5003.rpc.thirdweb.com/
-            NEXT_PUBLIC_AGENT_WS_URL=${{ secrets.NEXT_PUBLIC_AGENT_WS_URL }}
-            NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
-            NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
-
       - name: Build agent image (PR validation)
         if: github.event_name == 'pull_request'
         uses: docker/build-push-action@v5
@@ -60,26 +41,6 @@ jobs:
           file: Dockerfile.mcp
           push: false
           tags: vasmo-agent:pr
-
-      - name: Build and push web image
-        if: github.event_name == 'push'
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile.web
-          push: true
-          tags: ${{ env.WEB_IMAGE }}
-          build-args: |
-            NEXT_PUBLIC_NETWORK_MODE=testnet
-            NEXT_PUBLIC_CHAIN_ID=5003
-            NEXT_PUBLIC_MANTLE_SEPOLIA_RPC=https://rpc.sepolia.mantle.xyz
-            NEXT_PUBLIC_MANTLE_SEPOLIA_RPC_FALLBACK_1=https://mantle-sepolia.drpc.org
-            NEXT_PUBLIC_MANTLE_SEPOLIA_RPC_FALLBACK_2=https://5003.rpc.thirdweb.com/
-            NEXT_PUBLIC_AGENT_WS_URL=${{ secrets.NEXT_PUBLIC_AGENT_WS_URL }}
-            NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
-            NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
-          cache-from: type=gha,scope=vasmo-web
-          cache-to: type=gha,mode=max,scope=vasmo-web
 
       - name: Build and push agent image
         if: github.event_name == 'push'
@@ -104,13 +65,7 @@ jobs:
             echo "Deployment started at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 
             APP_DIR=/home/ubuntu/vasmo
-            WEB_ENV=$APP_DIR/.env.web
             AGENT_ENV=$APP_DIR/.env.agent
-
-            if [ ! -f "$WEB_ENV" ]; then
-              echo "Missing web env file: $WEB_ENV"
-              exit 1
-            fi
 
             if [ ! -f "$AGENT_ENV" ]; then
               echo "Missing agent env file: $AGENT_ENV"
@@ -121,21 +76,11 @@ jobs:
             sudo docker network create vasmo-net >/dev/null 2>&1 || true
 
             echo "Stopping old containers..."
-            sudo docker stop vasmo-web vasmo-agent || true
-            sudo docker rm vasmo-web vasmo-agent || true
+            sudo docker stop vasmo-agent || true
+            sudo docker rm vasmo-agent || true
 
             echo "Pulling latest images..."
-            sudo docker pull ${{ env.WEB_IMAGE }}
             sudo docker pull ${{ env.AGENT_IMAGE }}
-
-            echo "Starting web (Next.js)..."
-            sudo docker run -d \
-              --name vasmo-web \
-              --restart unless-stopped \
-              --network vasmo-net \
-              -p 3000:3000 \
-              --env-file "$WEB_ENV" \
-              ${{ env.WEB_IMAGE }}
 
             echo "Starting agent..."
             sudo docker run -d \
@@ -149,24 +94,15 @@ jobs:
             echo "Verifying deployment..."
             sleep 10
 
-            if ! sudo docker ps --format '{{.Names}}' | grep -q '^vasmo-web$'; then
-              echo "Web container failed to start"
-              sudo docker logs vasmo-web || true
-              exit 1
-            fi
-
             if ! sudo docker ps --format '{{.Names}}' | grep -q '^vasmo-agent$'; then
               echo "Agent container failed to start"
               sudo docker logs vasmo-agent || true
               exit 1
             fi
 
-            curl -fsS http://127.0.0.1:3000/health >/dev/null
             curl -fsS http://127.0.0.1:8080/health >/dev/null
 
-            echo "Both containers are running"
-            echo "Web logs:"
-            sudo docker logs --tail 30 vasmo-web
+            echo "Agent container is running"
             echo "Agent logs:"
             sudo docker logs --tail 30 vasmo-agent
             echo "Deployment completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
@@ -179,15 +115,6 @@ jobs:
           username: ${{ env.HOST_USERNAME }}
           key: ${{ env.SSH_PRIVATE_KEY }}
           script: |
-            if sudo docker ps --format '{{.Names}}' | grep -q '^vasmo-web$'; then
-              echo "Web container status:"
-              sudo docker inspect vasmo-web --format='Status: {{.State.Status}} | Started At: {{.State.StartedAt}}'
-              sudo docker port vasmo-web
-            else
-              echo "vasmo-web is not running"
-              exit 1
-            fi
-
             if sudo docker ps --format '{{.Names}}' | grep -q '^vasmo-agent$'; then
               echo "Agent container status:"
               sudo docker inspect vasmo-agent --format='Status: {{.State.Status}} | Started At: {{.State.StartedAt}}'

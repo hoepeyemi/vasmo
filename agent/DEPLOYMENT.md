@@ -78,6 +78,8 @@ Render will automatically deploy and provide a URL like:
 
 ## Alternative: Docker Deployment
 
+The Docker path now targets the agent service only.
+
 ### Build and Run Locally
 
 ```bash
@@ -86,10 +88,12 @@ docker build -f Dockerfile.mcp -t vasmo-agent .
 
 # Run container
 docker run -p 8080:8080 \
+  -e DEPLOYMENT_NETWORK=mantleSepolia \
   -e INVOICE_NFT_ADDRESS=0x018ee8F363421016177DbC8F9492fe2a1C720e29 \
   -e YIELD_VAULT_ADDRESS=0x7f51D3B234E4c20959A1f6e91D3B852EE16c65A6 \
   -e AGENT_ROUTER_ADDRESS=0x4430248F3b2304F946f08c43A06C3451657FD658 \
   -e PYTH_ORACLE_ADDRESS=0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3 \
+  -e AAVE_YIELD_ADDRESS=0x5a179d261fD322ecaED06FA9Aa2973980D74322c \
   vasmo-agent
 ```
 

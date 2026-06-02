@@ -93,14 +93,12 @@ npm run verify:mantle-sepolia
 
 ## Docker deployment
 
-- [`Dockerfile.web`](C:/Users/jwavo/vasmo/Dockerfile.web) builds the frontend image
 - [`Dockerfile.mcp`](C:/Users/jwavo/vasmo/Dockerfile.mcp) builds the agent image
-- [`.github/workflows/docker-deploy.yml`](C:/Users/jwavo/vasmo/.github/workflows/docker-deploy.yml) builds, pushes, and deploys both images
+- [`.github/workflows/docker-deploy.yml`](C:/Users/jwavo/vasmo/.github/workflows/docker-deploy.yml) builds, pushes, and deploys the agent image
 
 Local build:
 
 ```bash
-pnpm run docker:build:web
 pnpm run docker:build:agent
 ```
 
@@ -126,4 +124,3 @@ The AI-powered path is the agent-to-contract flow:
 - QuickBooks is optional and has a demo fallback if OAuth is not configured
 - The frontend is configured for Mantle Sepolia by default
 - The repo is organized for public deployment, not localhost-only usage
-

@@ -1,6 +1,6 @@
 # vasmo Deployment Guide
 
-This guide reflects the current Mantle Sepolia deployment, verified contracts, and Docker-based frontend and agent deployment.
+This guide reflects the current Mantle Sepolia deployment, verified contracts, and Docker-based agent deployment.
 
 ## 1. Deploy or verify contracts
 
@@ -21,34 +21,7 @@ Required environment variable:
 ETHERSCAN_API_KEY=your_api_key_here
 ```
 
-## 2. Frontend deployment
-
-The frontend is configured for public deployment on Mantle Sepolia.
-
-### Production URL
-
-- [https://vasmo-app.vercel.app/](https://vasmo-app.vercel.app/)
-
-### Required environment variables
-
-Set these in your hosting provider or Docker env file:
-
-```bash
-NEXT_PUBLIC_CHAIN_ID=5003
-NEXT_PUBLIC_NETWORK_MODE=testnet
-NEXT_PUBLIC_INVOICE_NFT_ADDRESS=0x018ee8F363421016177DbC8F9492fe2a1C720e29
-NEXT_PUBLIC_YIELD_VAULT_ADDRESS=0x7f51D3B234E4c20959A1f6e91D3B852EE16c65A6
-NEXT_PUBLIC_AGENT_ROUTER_ADDRESS=0x4430248F3b2304F946f08c43A06C3451657FD658
-NEXT_PUBLIC_PRIVACY_REGISTRY_ADDRESS=0x2DA4B52913A928263a405dE3b42a5768a4dCa3b0
-NEXT_PUBLIC_AGENT_WS_URL=wss://your-public-agent-domain
-NEXT_PUBLIC_APP_URL=https://your-public-web-domain
-NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your-project-id
-NEXT_PUBLIC_MANTLE_SEPOLIA_RPC=https://rpc.sepolia.mantle.xyz
-NEXT_PUBLIC_MANTLE_SEPOLIA_RPC_FALLBACK_1=https://mantle-sepolia.drpc.org
-NEXT_PUBLIC_MANTLE_SEPOLIA_RPC_FALLBACK_2=https://5003.rpc.thirdweb.com/
-```
-
-## 3. Agent deployment
+## 2. Agent deployment
 
 The agent reads the live Mantle Sepolia deployment manifest by default.
 
@@ -67,19 +40,19 @@ AGENT_PRIVATE_KEY=0x...
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-## 4. Docker deployment
+## 3. Docker deployment
+
+The Docker deployment path now targets the agent only.
 
 ### Build locally
 
 ```bash
-pnpm run docker:build:web
 pnpm run docker:build:agent
 ```
 
 ### Run locally
 
 ```bash
-docker run -p 3000:3000 --env-file app/.env.local vasmo-web
 docker run -p 8080:8080 --env-file agent/.env.local vasmo-agent
 ```
 
@@ -87,35 +60,30 @@ docker run -p 8080:8080 --env-file agent/.env.local vasmo-agent
 
 The repo includes:
 
-- [`Dockerfile.web`](C:/Users/jwavo/vasmo/Dockerfile.web)
 - [`Dockerfile.mcp`](C:/Users/jwavo/vasmo/Dockerfile.mcp)
 - [`.github/workflows/docker-deploy.yml`](C:/Users/jwavo/vasmo/.github/workflows/docker-deploy.yml)
 
 The workflow:
 
-1. Builds and pushes the web image.
-2. Builds and pushes the agent image.
-3. SSHes into an Ubuntu host.
-4. Pulls the latest images.
-5. Starts `vasmo-web` on port `3000`.
-6. Starts `vasmo-agent` on port `8080`.
-7. Checks `/health` on both services.
+1. Builds and pushes the agent image.
+2. SSHes into an Ubuntu host.
+3. Pulls the latest agent image.
+4. Starts `vasmo-agent` on port `8080`.
+5. Checks `/health` on the agent service.
 
-## 5. User-facing checklist
+## 4. User-facing checklist
 
 Before submission, confirm:
 
 - Smart contracts are deployed on Mantle Sepolia
 - Smart contracts are verified on Mantle Explorer
-- Frontend is publicly accessible
+- Frontend is publicly accessible through its own hosting provider
 - The agent can call the on-chain strategy flow
 - Deployment addresses are included in the submission
 - Demo video is at least 2 minutes
 
-## 6. Helpful URLs
+## 5. Helpful URLs
 
-- Frontend health: `https://your-public-web-domain/health`
 - Agent health: `https://your-public-agent-domain/health`
 - Mantle Sepolia Explorer: [https://explorer.sepolia.mantle.xyz](https://explorer.sepolia.mantle.xyz)
 - Mantle Sepolia faucet: [https://faucet.sepolia.mantle.xyz/](https://faucet.sepolia.mantle.xyz/)
-
