@@ -14,7 +14,7 @@ Next.js frontend for vasmo, built for Mantle Sepolia and ready for public deploy
 
 The frontend is configured to be publicly accessible and not localhost-only.
 
-- Live demo: [https://vasmo-app.vercel.app/](https://vasmo-app.vercel.app/)
+- Live demo: [https://vasno.netlify.app/](https://vasno.netlify.app/)
 - Health endpoint: `/health`
 
 Set the public URL in production with `NEXT_PUBLIC_APP_URL`.
