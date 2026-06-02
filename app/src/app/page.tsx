@@ -115,7 +115,7 @@ export default function LandingPage() {
               </Button>
             </Link>
             <a
-              href="https://github.com/anthropics/x402"
+              href="https://github.com/hoepeyemi/vasmo"
               target="_blank"
               rel="noopener noreferrer"
             >
