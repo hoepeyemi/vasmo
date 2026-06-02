@@ -61,7 +61,7 @@ docker run -p 8080:8080 --env-file agent/.env.local vasmo-agent
 The repo includes:
 
 - [`Dockerfile.mcp`](C:/Users/jwavo/vasmo/Dockerfile.mcp)
-- [`.github/workflows/docker-deploy.yml`](C:/Users/jwavo/vasmo/.github/workflows/docker-deploy.yml)
+- [`.github/workflows/ci.yml`](C:/Users/jwavo/vasmo/.github/workflows/ci.yml)
 
 The workflow:
 

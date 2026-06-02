@@ -94,7 +94,7 @@ npm run verify:mantle-sepolia
 ## Docker deployment
 
 - [`Dockerfile.mcp`](C:/Users/jwavo/vasmo/Dockerfile.mcp) builds the agent image
-- [`.github/workflows/docker-deploy.yml`](C:/Users/jwavo/vasmo/.github/workflows/docker-deploy.yml) builds, pushes, and deploys the agent image
+- [`.github/workflows/ci.yml`](C:/Users/jwavo/vasmo/.github/workflows/ci.yml) handles tests, Pages deployment, and agent Docker deployment
 
 Local build:
 

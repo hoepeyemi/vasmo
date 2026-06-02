@@ -78,4 +78,4 @@ The agent broadcasts analysis, execution, and error messages to the frontend das
 See:
 
 - [`agent/DEPLOYMENT.md`](C:/Users/jwavo/vasmo/agent/DEPLOYMENT.md)
-- [`.github/workflows/docker-deploy.yml`](C:/Users/jwavo/vasmo/.github/workflows/docker-deploy.yml)
+- [`.github/workflows/ci.yml`](C:/Users/jwavo/vasmo/.github/workflows/ci.yml)
