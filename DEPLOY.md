@@ -1,283 +1,121 @@
 # vasmo Deployment Guide
 
-## Prerequisites
+This guide reflects the current Mantle Sepolia deployment, verified contracts, and Docker-based frontend and agent deployment.
 
-1. **Node.js** 18+ and pnpm
-2. **Foundry** - Install with `curl -L https://foundry.paradigm.xyz | bash && foundryup`
-3. **MNT tokens** on Mantle Sepolia for gas
+## 1. Deploy or verify contracts
 
-## Get Testnet MNT
+The live Mantle Sepolia deployment is already recorded in:
 
-1. Go to [Mantle Sepolia Faucet](https://faucet.sepolia.mantle.xyz/)
-2. Connect your wallet
-3. Request testnet MNT
+- [`contracts/deployments/mantleSepolia.json`](C:/Users/jwavo/vasmo/contracts/deployments/mantleSepolia.json)
 
-## Step 1: Deploy Contracts
+To verify the deployment programmatically:
 
 ```bash
 cd contracts
-
-# Copy environment file
-cp .env.example .env
-
-# Edit .env and add your private key
-# PRIVATE_KEY=0x...your_private_key...
-
-# Deploy to Mantle Sepolia
-make deploy-sepolia
+npm run verify:mantle-sepolia
 ```
 
-Save the deployed addresses from the output.
+Required environment variable:
 
-## Step 2: Configure Frontend
-
-Edit `app/.env`:
-
-```env
-# Contract addresses (from deployment)
-NEXT_PUBLIC_INVOICE_NFT_ADDRESS=0x...
-NEXT_PUBLIC_YIELD_VAULT_ADDRESS=0x...
-NEXT_PUBLIC_PRIVACY_REGISTRY_ADDRESS=0x...
-NEXT_PUBLIC_AGENT_ROUTER_ADDRESS=0x...
-NEXT_PUBLIC_MOCK_ORACLE_ADDRESS=0x...
-
-# Agent WebSocket URL
-NEXT_PUBLIC_AGENT_WS_URL=ws://localhost:8080
+```bash
+ETHERSCAN_API_KEY=your_api_key_here
 ```
 
-## Step 3: Configure Agent
+## 2. Frontend deployment
 
-Edit `agent/.env`:
+The frontend is configured for public deployment on Mantle Sepolia.
 
-```env
-# Mantle Sepolia RPC
+### Production URL
+
+- [https://vasmo-app.vercel.app/](https://vasmo-app.vercel.app/)
+
+### Required environment variables
+
+Set these in your hosting provider or Docker env file:
+
+```bash
+NEXT_PUBLIC_CHAIN_ID=5003
+NEXT_PUBLIC_NETWORK_MODE=testnet
+NEXT_PUBLIC_INVOICE_NFT_ADDRESS=0x018ee8F363421016177DbC8F9492fe2a1C720e29
+NEXT_PUBLIC_YIELD_VAULT_ADDRESS=0x7f51D3B234E4c20959A1f6e91D3B852EE16c65A6
+NEXT_PUBLIC_AGENT_ROUTER_ADDRESS=0x4430248F3b2304F946f08c43A06C3451657FD658
+NEXT_PUBLIC_PRIVACY_REGISTRY_ADDRESS=0x2DA4B52913A928263a405dE3b42a5768a4dCa3b0
+NEXT_PUBLIC_AGENT_WS_URL=wss://your-public-agent-domain
+NEXT_PUBLIC_APP_URL=https://your-public-web-domain
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your-project-id
+NEXT_PUBLIC_MANTLE_SEPOLIA_RPC=https://rpc.sepolia.mantle.xyz
+NEXT_PUBLIC_MANTLE_SEPOLIA_RPC_FALLBACK_1=https://mantle-sepolia.drpc.org
+NEXT_PUBLIC_MANTLE_SEPOLIA_RPC_FALLBACK_2=https://5003.rpc.thirdweb.com/
+```
+
+## 3. Agent deployment
+
+The agent reads the live Mantle Sepolia deployment manifest by default.
+
+### Required environment variables
+
+```bash
+DEPLOYMENT_NETWORK=mantleSepolia
 MANTLE_RPC_URL=https://rpc.sepolia.mantle.xyz
-
-# Agent wallet private key (needs MNT for gas)
+WS_PORT=8080
+INVOICE_NFT_ADDRESS=0x018ee8F363421016177DbC8F9492fe2a1C720e29
+YIELD_VAULT_ADDRESS=0x7f51D3B234E4c20959A1f6e91D3B852EE16c65A6
+AGENT_ROUTER_ADDRESS=0x4430248F3b2304F946f08c43A06C3451657FD658
+PYTH_ORACLE_ADDRESS=0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3
+AAVE_YIELD_ADDRESS=0x5a179d261fD322ecaED06FA9Aa2973980D74322c
 AGENT_PRIVATE_KEY=0x...
-
-# LLM API key (for AI explanations)
-ANTHROPIC_API_KEY=your_api_key_here
-
-# Contract addresses (from deployment)
-INVOICE_NFT_ADDRESS=0x...
-YIELD_VAULT_ADDRESS=0x...
-AGENT_ROUTER_ADDRESS=0x...
-MOCK_ORACLE_ADDRESS=0x...
+ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-## Step 4: Start the App
+## 4. Docker deployment
 
-```bash
-# Terminal 1: Start the agent
-cd agent
-pnpm install
-pnpm start
-
-# Terminal 2: Start the frontend
-cd app
-pnpm install
-pnpm dev
-```
-
-## Step 5: Verify Configuration
-
-After setting up, verify your configuration is correct:
-
-**Contract Address Validation**:
-- Open http://localhost:3000
-- If you see a red error banner at the top, your contract addresses are invalid
-- Check your `app/.env` file and ensure all addresses are correct (not 0x0000...)
-- The banner will list which specific addresses are invalid
-
-**Agent Health Check**:
-- Navigate to http://localhost:3000/dashboard/agent
-- Verify "Connected" status in top-right corner
-- Watch for analysis cycles (every 30 seconds)
-- If agent shows "Disconnected", check agent terminal for errors
-
-## Step 6: Run End-to-End Tests
-
-Use the comprehensive test checklist:
-
-```bash
-# Open the E2E test checklist
-cat E2E_TEST_CHECKLIST.md
-```
-
-Complete the manual testing flows:
-1. **Invoice Lifecycle**: Mint → Deposit → Agent Analysis → Change Strategy → Withdraw
-2. **Error Handling**: Invalid addresses, timeouts, network disconnection
-3. **UI/UX Verification**: Landing page, dashboard, agent activity
-4. **Performance**: Build time, load time, transaction speed
-
-**Expected Results**:
-- All contract calls succeed
-- Agent completes cycles in <30 seconds (timeout at 60s)
-- No console errors
-- Smooth UI transitions
-
-## Video Demo Script (2-3 minutes)
-
-### Opening Hook (0-15s)
-**SCREEN**: Landing page with stats
-**SAY**: "Businesses have $3 trillion locked in unpaid invoices. Instead of selling them at a discount to factoring companies, what if your invoices could earn yield while you wait?"
-
-### Problem Statement (15-30s)
-**SCREEN**: Scroll to "The Problem" section
-**SAY**: "Traditional invoice factoring costs 2-5% and requires exposing sensitive client data. vasmo flips this — instead of paying middlemen, you earn DeFi yields."
-
-### Connect & Dashboard (30-45s)
-**SCREEN**: Click "Launch App" → Connect MetaMask → Dashboard appears
-**SAY**: "vasmo runs on Mantle Sepolia. Connect your wallet, and you're ready to tokenize invoices."
-
-### Mint Invoice NFT (45-75s)
-**SCREEN**: Click "Mint Invoice" → Fill form → Submit → See transaction
-**SAY**: "Create an invoice — the client name, amount, and due date. When you submit, vasmo creates an NFT with a cryptographic privacy commitment. Your business data stays private, but the invoice is now a tradeable on-chain asset."
-**SHOW**: Transaction confirmation, NFT appears in portfolio
-
-### Deposit to Yield Vault (75-105s)
-**SCREEN**: Click "Deposit" on the invoice → Strategy selection modal
-**SAY**: "Now deposit the invoice value to our yield vault. Notice the APY — that's pulled live from Lendle, Mantle's native lending protocol. Choose Conservative for capital protection or Aggressive for higher yields."
-**SHOW**: Live APY badge, approve transaction, deposit transaction
-
-### Live Agent Reasoning (105-135s)
-**SCREEN**: Navigate to "Agent" tab → Watch activity stream
-**SAY**: "Here's where it gets interesting. An autonomous AI agent monitors your portfolio 24/7. Watch it analyze market conditions in real-time — it's checking oracle prices, calculating risk ratios, and deciding whether to rebalance."
-**SHOW**: Agent activity cards streaming in, thinking/analysis/action types
-
-### Market Stress Demo (135-155s)
-**SCREEN**: Click "Simulate Market Crash" button
-**SAY**: "What happens when markets crash? The agent detects risk through Pyth oracles and automatically switches to a defensive strategy. On Mantle, this costs less than a cent — making frequent AI decisions economically viable."
-**SHOW**: Agent detecting crash, executing strategy change
-
-### Closing Value Prop (155-180s)
-**SCREEN**: Return to portfolio showing yield accrued
-**SAY**: "vasmo transforms invoices from idle assets into yield-generating instruments. Privacy-preserving, AI-optimized, and built for Mantle's low-cost, high-throughput environment. Turn your receivables into revenue."
-
----
-
-### Key Points for Judges
-
-1. **Real Blockchain Integration** - All transactions write to Mantle Sepolia testnet
-2. **Live DeFi Data** - APY rates fetched from Lendle protocol on Mantle mainnet
-3. **Autonomous Agent** - Rule-based optimizer with LLM explanation layer
-4. **Privacy Architecture** - Cryptographic commitments, ZK-ready design
-5. **Mantle-Native** - Sub-cent gas enables frequent agent execution
-
-## Troubleshooting
-
-### "Insufficient funds"
-Get more MNT from the faucet: https://faucet.sepolia.mantle.xyz/
-
-### "Agent not connecting"
-Make sure the agent is running and WS_PORT matches NEXT_PUBLIC_AGENT_WS_URL.
-- Check agent terminal for errors
-- Verify WebSocket port is not blocked by firewall
-- Try restarting the agent service
-
-### "Contract call failed"
-Verify the contract addresses in .env match your deployment.
-- The red error banner will show which addresses are invalid
-- Ensure addresses are not 0x0000...
-- Verify contracts are actually deployed to the network
-
-### "Configuration Error" banner appears
-Your environment variables are not set correctly:
-1. Check `app/.env` file exists (copy from `app/.env.example`)
-2. Ensure all `NEXT_PUBLIC_*_ADDRESS` variables are set
-3. Verify addresses are valid checksummed Ethereum addresses
-4. Restart the dev server after changing .env
-
-### "Analysis cycle timed out"
-The agent's analysis cycle exceeded 60 seconds:
-- This is normal if RPC is slow or network is congested
-- The agent will automatically retry on the next cycle
-- Circuit breaker will trip after repeated timeouts
-- Check Mantle Sepolia network status
-
-### "WebSocket disconnected"
-The agent WebSocket connection dropped:
-- Agent will automatically reconnect with exponential backoff
-- Max 5 reconnection attempts
-- If persistent, check agent service logs
-- Verify NEXT_PUBLIC_AGENT_WS_URL is correct
-
-### "Transaction underpriced"
-Gas price too low for current network conditions:
-- MetaMask will suggest a higher gas price
-- Accept the suggested price
-- Mantle gas is extremely cheap, even at higher prices
-
----
-
-## Docker Deployment
-
-The repo now includes Docker support for both the frontend and agent:
-
-- [`Dockerfile.web`](/C:/Users/jwavo/vasmo/Dockerfile.web) builds the Next.js app
-- [`Dockerfile.mcp`](/C:/Users/jwavo/vasmo/Dockerfile.mcp) builds the agent service
-- [`.github/workflows/docker-deploy.yml`](/C:/Users/jwavo/vasmo/.github/workflows/docker-deploy.yml) builds, pushes, and deploys both images
-
-### Local Build
+### Build locally
 
 ```bash
 pnpm run docker:build:web
 pnpm run docker:build:agent
 ```
 
-### Ubuntu Host Setup
+### Run locally
 
-Create these files on the server:
-
-- `/home/ubuntu/vasmo/.env.web`
-- `/home/ubuntu/vasmo/.env.agent`
-
-The GitHub workflow expects these secrets:
-
-- `DOCKER_USERNAME_PROD`
-- `DOCKER_HUB_ACCESS_TOKEN_PROD`
-- `SSH_HOST_TEMP`
-- `SSH_USERNAME_TEMP`
-- `SSH_PRIVATE_TEMP`
-- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
-- `NEXT_PUBLIC_AGENT_WS_URL`
-- `NEXT_PUBLIC_APP_URL`
-
-`NEXT_PUBLIC_AGENT_WS_URL` should point to the public WebSocket endpoint the browser can reach, and `NEXT_PUBLIC_APP_URL` should match the public web URL for QuickBooks redirects.
-
-### Runtime Ports
-
-- Web app: `3000`
-- Agent: `8080`
-
-### Health Checks
-
-- Web: `http://localhost:3000/health`
-- Agent: `http://localhost:8080/health`
-
-## Production Deployment
-
-### Frontend (Vercel)
 ```bash
-cd app
-vercel --prod
+docker run -p 3000:3000 --env-file app/.env.local vasmo-web
+docker run -p 8080:8080 --env-file agent/.env.local vasmo-agent
 ```
 
-Set environment variables in Vercel dashboard:
-- All `NEXT_PUBLIC_*` variables from `.env`
+### GitHub Actions workflow
 
-### Agent Service (Railway/Render)
-```bash
-cd agent
-# Push to Railway or Render
-# Set environment variables in platform dashboard
-```
+The repo includes:
 
-Required environment variables:
-- `MANTLE_RPC_URL`
-- `AGENT_PRIVATE_KEY`
-- `ANTHROPIC_API_KEY`
-- All contract addresses
+- [`Dockerfile.web`](C:/Users/jwavo/vasmo/Dockerfile.web)
+- [`Dockerfile.mcp`](C:/Users/jwavo/vasmo/Dockerfile.mcp)
+- [`.github/workflows/docker-deploy.yml`](C:/Users/jwavo/vasmo/.github/workflows/docker-deploy.yml)
 
-Update frontend `NEXT_PUBLIC_AGENT_WS_URL` to point to production agent.
+The workflow:
+
+1. Builds and pushes the web image.
+2. Builds and pushes the agent image.
+3. SSHes into an Ubuntu host.
+4. Pulls the latest images.
+5. Starts `vasmo-web` on port `3000`.
+6. Starts `vasmo-agent` on port `8080`.
+7. Checks `/health` on both services.
+
+## 5. User-facing checklist
+
+Before submission, confirm:
+
+- Smart contracts are deployed on Mantle Sepolia
+- Smart contracts are verified on Mantle Explorer
+- Frontend is publicly accessible
+- The agent can call the on-chain strategy flow
+- Deployment addresses are included in the submission
+- Demo video is at least 2 minutes
+
+## 6. Helpful URLs
+
+- Frontend health: `https://your-public-web-domain/health`
+- Agent health: `https://your-public-agent-domain/health`
+- Mantle Sepolia Explorer: [https://explorer.sepolia.mantle.xyz](https://explorer.sepolia.mantle.xyz)
+- Mantle Sepolia faucet: [https://faucet.sepolia.mantle.xyz/](https://faucet.sepolia.mantle.xyz/)
+
