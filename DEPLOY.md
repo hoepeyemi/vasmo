@@ -211,6 +211,51 @@ Gas price too low for current network conditions:
 
 ---
 
+## Docker Deployment
+
+The repo now includes Docker support for both the frontend and agent:
+
+- [`Dockerfile.web`](/C:/Users/jwavo/vasmo/Dockerfile.web) builds the Next.js app
+- [`Dockerfile.mcp`](/C:/Users/jwavo/vasmo/Dockerfile.mcp) builds the agent service
+- [`.github/workflows/docker-deploy.yml`](/C:/Users/jwavo/vasmo/.github/workflows/docker-deploy.yml) builds, pushes, and deploys both images
+
+### Local Build
+
+```bash
+pnpm run docker:build:web
+pnpm run docker:build:agent
+```
+
+### Ubuntu Host Setup
+
+Create these files on the server:
+
+- `/home/ubuntu/vasmo/.env.web`
+- `/home/ubuntu/vasmo/.env.agent`
+
+The GitHub workflow expects these secrets:
+
+- `DOCKER_USERNAME_PROD`
+- `DOCKER_HUB_ACCESS_TOKEN_PROD`
+- `SSH_HOST_TEMP`
+- `SSH_USERNAME_TEMP`
+- `SSH_PRIVATE_TEMP`
+- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
+- `NEXT_PUBLIC_AGENT_WS_URL`
+- `NEXT_PUBLIC_APP_URL`
+
+`NEXT_PUBLIC_AGENT_WS_URL` should point to the public WebSocket endpoint the browser can reach, and `NEXT_PUBLIC_APP_URL` should match the public web URL for QuickBooks redirects.
+
+### Runtime Ports
+
+- Web app: `3000`
+- Agent: `8080`
+
+### Health Checks
+
+- Web: `http://localhost:3000/health`
+- Agent: `http://localhost:8080/health`
+
 ## Production Deployment
 
 ### Frontend (Vercel)

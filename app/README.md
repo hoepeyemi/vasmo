@@ -11,6 +11,16 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
+## Docker
+
+Build the production image from the repo root:
+
+```bash
+docker build -f Dockerfile.web -t vasmo-web .
+```
+
+The container serves the app on port `3000` and exposes `/health` for deployment checks.
+
 ## Features
 
 - **Dashboard**: Portfolio overview with real-time yield tracking

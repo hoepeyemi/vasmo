@@ -7,7 +7,9 @@ const nextConfig: NextConfig = {
   ...(isGitHubPages ? {
     output: "export",
     basePath: "/vasmo",
-  } : {}),
+  } : {
+    output: "standalone",
+  }),
   images: { unoptimized: true },
   typescript: { ignoreBuildErrors: true },
 };

@@ -81,10 +81,8 @@ Render will automatically deploy and provide a URL like:
 ### Build and Run Locally
 
 ```bash
-cd agent
-
-# Build image
-docker build -t vasmo-agent .
+# From the repo root
+docker build -f Dockerfile.mcp -t vasmo-agent .
 
 # Run container
 docker run -p 8080:8080 \
@@ -94,6 +92,10 @@ docker run -p 8080:8080 \
   -e PYTH_ORACLE_ADDRESS=0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3 \
   vasmo-agent
 ```
+
+The production container now reads the Mantle Sepolia deployment manifest from
+[`contracts/deployments/mantleSepolia.json`](/C:/Users/jwavo/vasmo/contracts/deployments/mantleSepolia.json)
+so you usually only need to provide RPC and private key overrides in the env file.
 
 ### Deploy to Any Cloud
 
