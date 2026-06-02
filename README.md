@@ -5,7 +5,7 @@
 vasmo turns invoices into on-chain assets, lets users mint and manage them in the frontend, and lets an AI agent monitor and execute strategy changes on-chain through the deployed contracts.
 
 Live demo:
-- [Frontend](https://vasno.netlify.app/)
+- [Frontend](https://vasmo.netlify.app/)
 
 ## Submission checklist
 
