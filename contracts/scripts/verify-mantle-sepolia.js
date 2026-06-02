@@ -69,6 +69,22 @@ function readArtifact(relativePath) {
   return JSON.parse(fs.readFileSync(artifactPath, "utf8"));
 }
 
+function findBuildInfoFor(sourceName, contractName) {
+  const buildInfoDir = path.join(__dirname, "..", "artifacts", "build-info");
+  const files = fs.existsSync(buildInfoDir)
+    ? fs.readdirSync(buildInfoDir).filter((file) => file.endsWith(".json"))
+    : [];
+
+  for (const file of files) {
+    const buildInfo = JSON.parse(fs.readFileSync(path.join(buildInfoDir, file), "utf8"));
+    if (buildInfo?.input && buildInfo?.output?.contracts?.[sourceName]?.[contractName]) {
+      return buildInfo;
+    }
+  }
+
+  throw new Error(`Could not find build-info for ${sourceName}:${contractName}`);
+}
+
 function normalizeHex(value) {
   return value.startsWith("0x") ? value : `0x${value}`;
 }
@@ -106,9 +122,17 @@ async function getVerificationState(address) {
 
 async function submitVerification(target) {
   const artifact = readArtifact(target.artifactPath);
-  const metadata = JSON.parse(artifact.metadata);
-  const compilerVersion = `v${metadata.compiler.version}`;
-  const sourceCode = JSON.stringify(metadata.input);
+  const buildInfo = findBuildInfoFor(artifact.sourceName, artifact.contractName);
+  const compilerVersion = buildInfo.solcLongVersion.startsWith("v")
+    ? buildInfo.solcLongVersion
+    : `v${buildInfo.solcLongVersion}`;
+  const input = JSON.parse(JSON.stringify(buildInfo.input));
+  if (target.legacySourceOverride) {
+    input.sources[target.legacySourceOverride.sourcePath] = {
+      content: fs.readFileSync(target.legacySourceOverride.filePath, "utf8"),
+    };
+  }
+  const sourceCode = JSON.stringify(input);
   const constructorArgs = target.constructorArgs.length
     ? abiCoder.encode(target.constructorTypes, target.constructorArgs).replace(/^0x/, "")
     : "";
@@ -123,9 +147,9 @@ async function submitVerification(target) {
     codeformat: "solidity-standard-json-input",
     contractname: `${artifact.sourceName}:${artifact.contractName}`,
     compilerversion: compilerVersion,
-    optimizationUsed: metadata.settings.optimizer?.enabled ? "1" : "0",
-    runs: String(metadata.settings.optimizer?.runs ?? 0),
-    evmVersion: metadata.settings.evmVersion || "default",
+    optimizationUsed: buildInfo.input.settings.optimizer?.enabled ? "1" : "0",
+    runs: String(buildInfo.input.settings.optimizer?.runs ?? 0),
+    evmVersion: buildInfo.input.settings.evmVersion || "default",
     licenseType: "3",
     constructorArguments: constructorArgs,
   });
@@ -149,7 +173,7 @@ async function submitVerification(target) {
   return { guid, payload };
 }
 
-async function pollVerification(guid, name) {
+async function pollVerification(guid, name, address) {
   for (let attempt = 0; attempt < 30; attempt++) {
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
@@ -162,6 +186,13 @@ async function pollVerification(guid, name) {
 
     const response = await fetch(url, { method: "GET" });
     if (!response.ok) {
+      if (response.status === 403 && address) {
+        const state = await getVerificationState(address);
+        if (state.verified) {
+          return { ok: true, result: "Verified via source lookup fallback", payload: state.payload };
+        }
+        continue;
+      }
       throw new Error(`Status check failed for ${name}: HTTP ${response.status}`);
     }
 
@@ -205,7 +236,7 @@ async function verifyContract(target) {
   }
 
   const { guid } = await submitVerification(target);
-  const finalState = await pollVerification(guid, target.name);
+  const finalState = await pollVerification(guid, target.name, target.address);
   if (!finalState.ok) {
     throw new Error(`${target.name} verification failed: ${finalState.result}`);
   }
@@ -232,6 +263,10 @@ async function main() {
       artifactPath: path.join("src", "InvoiceNFT.sol", "InvoiceNFT.json"),
       constructorArgs: [],
       constructorTypes: [],
+      legacySourceOverride: {
+        filePath: path.join(__dirname, "..", "src", "legacy", "InvoiceNFT.sol"),
+        sourcePath: "src/InvoiceNFT.sol",
+      },
     },
     {
       name: "YieldVault",
