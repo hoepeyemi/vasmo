@@ -152,8 +152,10 @@ export class BlockchainService {
   constructor(rpcUrl: string, addresses: ContractAddresses, privateKey?: string) {
     this.provider = new ethers.JsonRpcProvider(rpcUrl);
 
-    if (privateKey) {
+    if (privateKey && ethers.isHexString(privateKey, 32)) {
       this.signer = new ethers.Wallet(privateKey, this.provider);
+    } else if (privateKey) {
+      console.warn('Ignoring AGENT_PRIVATE_KEY because it is not a valid 32-byte hex private key');
     }
 
     const signerOrProvider = this.signer || this.provider;

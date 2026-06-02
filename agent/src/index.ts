@@ -49,8 +49,8 @@ function validateEnvironment(addresses: ContractAddresses): { valid: boolean; wa
 
   // Validate private key format if provided
   const privateKey = process.env.AGENT_PRIVATE_KEY;
-  if (privateKey && !privateKey.startsWith('0x')) {
-    warnings.push('AGENT_PRIVATE_KEY should start with 0x');
+  if (privateKey && !/^0x[0-9a-fA-F]{64}$/.test(privateKey)) {
+    warnings.push('AGENT_PRIVATE_KEY must be a 32-byte hex private key (0x + 64 hex chars)');
   }
 
   // Validate port number
@@ -82,6 +82,14 @@ function readDeploymentDefaults(networkName: string): Partial<ContractAddresses>
 
 function uniqueUrls(urls: Array<string | undefined>): string[] {
   return [...new Set(urls.filter((url): url is string => Boolean(url)))];
+}
+
+function normalizePrivateKey(value: string | undefined): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  return /^0x[0-9a-fA-F]{64}$/.test(value) ? value : undefined;
 }
 
 const MANTLE_SEPOLIA_RPC_FALLBACKS = uniqueUrls([
@@ -132,7 +140,7 @@ async function selectWorkingRpcUrl(urls: string[]): Promise<string> {
 }
 
 // Load configuration from environment
-const PRIVATE_KEY = process.env.AGENT_PRIVATE_KEY;
+const PRIVATE_KEY = normalizePrivateKey(process.env.AGENT_PRIVATE_KEY);
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const WS_PORT = parseInt(process.env.WS_PORT || '8080');
 const DEPLOYMENT_NETWORK = process.env.DEPLOYMENT_NETWORK || 'mantleSepolia';
