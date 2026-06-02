@@ -64,8 +64,6 @@ jobs:
           file: Dockerfile.mcp
           push: true
           tags: ${{ env.AGENT_IMAGE }}
-          cache-from: type=gha,scope=vasmo-agent
-          cache-to: type=gha,mode=max,scope=vasmo-agent
 
       - name: Deploy to Ubuntu server
         if: github.event_name == 'push'
