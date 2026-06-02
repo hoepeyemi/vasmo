@@ -104,15 +104,23 @@ jobs:
               ${{ env.AGENT_IMAGE }}
 
             echo "Verifying deployment..."
-            sleep 10
+            for i in $(seq 1 24); do
+              if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then
+                break
+              fi
+              if [ "$i" -eq 24 ]; then
+                echo "Agent did not become healthy in time"
+                sudo docker logs --tail 120 vasmo-agent || true
+                exit 1
+              fi
+              sleep 5
+            done
 
             if ! sudo docker ps --format '{{.Names}}' | grep -q '^vasmo-agent$'; then
               echo "Agent container failed to start"
-              sudo docker logs vasmo-agent || true
+              sudo docker logs --tail 120 vasmo-agent || true
               exit 1
             fi
-
-            curl -fsS http://127.0.0.1:8080/health >/dev/null
 
             echo "Agent container is running"
             echo "Agent logs:"
