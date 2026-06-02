@@ -121,7 +121,7 @@ export function useDepositToVault() {
   const yieldVaultAddress = getYieldVaultAddress(chainId)
   const invoiceNFTAddress = getInvoiceNFTAddress(chainId)
 
-  const { writeContract: approveNFT, data: approveHash, isPending: isApproving, error: approveError } = useWriteContract()
+  const { writeContract: approveNFT, data: approveHash, isPending: isApproving, error: approveError, reset: resetApprove } = useWriteContract()
   const { writeContract: depositToVault, data: depositHash, isPending: isDepositing, error: depositError } = useWriteContract()
 
   const {
@@ -193,6 +193,7 @@ export function useDepositToVault() {
     isDepositSuccess,
     depositError,
     depositConfirmError,
+    resetApprove,
   }
 }
 
