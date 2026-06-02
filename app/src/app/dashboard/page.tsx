@@ -65,7 +65,9 @@ export default function Dashboard() {
     setError(null)
 
     try {
-      const response = await fetch(`/api/invoices?active=true`)
+      const response = await fetch(`/api/invoices?active=true`, {
+        cache: "no-store",
+      })
       const data = await response.json()
 
       if (data.success && data.data.invoices) {
@@ -73,6 +75,7 @@ export default function Dashboard() {
           const dueDate = new Date(inv.dueDate)
           const daysUntilDue = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
           const principal = inv.deposit ? Number(formatUnits(BigInt(inv.deposit.principal), 18)) : 0
+          const isInYield = Boolean(inv.deposit) || inv.status === "InYield"
           return {
             id: `INV-${String(inv.tokenId).padStart(4, '0')}`,
             tokenId: inv.tokenId,
@@ -83,7 +86,7 @@ export default function Dashboard() {
             strategy: inv.deposit?.strategy?.toLowerCase() || "—",
             apy: inv.deposit?.strategy === "Aggressive" ? `${aggressiveAPY}%` : inv.deposit?.strategy === "Conservative" ? `${conservativeAPY}%` : "—",
             accruedYield: inv.deposit ? `+$${Number(formatUnits(BigInt(inv.deposit.accruedYield), 18)).toFixed(2)}` : "$0.00",
-            status: inv.status,
+            status: isInYield ? "InYield" : inv.status,
             riskScore: inv.riskScore || 75,
           }
         })
@@ -99,6 +102,20 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchInvoices()
+  }, [isConnected, conservativeAPY, aggressiveAPY])
+
+  useEffect(() => {
+    const refresh = () => {
+      void fetchInvoices()
+    }
+
+    window.addEventListener("focus", refresh)
+    document.addEventListener("visibilitychange", refresh)
+
+    return () => {
+      window.removeEventListener("focus", refresh)
+      document.removeEventListener("visibilitychange", refresh)
+    }
   }, [isConnected, conservativeAPY, aggressiveAPY])
 
   const filteredInvoices = invoices.filter((inv) =>

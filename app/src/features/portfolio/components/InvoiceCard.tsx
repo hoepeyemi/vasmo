@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useChainId, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { formatEther } from 'viem';
+import { formatEther, parseUnits } from 'viem';
 import { getContractAddresses } from '@/lib/wagmi';
 import { InvoiceNFTABI, YieldVaultABI, StrategyNames, InvoiceStatusNames } from '@/lib/abi';
 import { FileText, Lock, AlertTriangle } from 'lucide-react';
@@ -49,7 +49,7 @@ export function InvoiceCard({ tokenId, onRefresh }: InvoiceCardProps) {
   const contracts = getContractAddresses(chainId);
   const [showDeposit, setShowDeposit] = useState(false);
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
-  const [depositTriggered, setDepositTriggered] = useState(false);
+  const [pendingDeposit, setPendingDeposit] = useState<{ principal: string; strategy: number } | null>(null);
 
   const { data: invoice, isLoading: isLoadingInvoice, error: invoiceError } = useReadContract({
     address: contracts.invoiceNFT,
@@ -80,15 +80,20 @@ export function InvoiceCard({ tokenId, onRefresh }: InvoiceCardProps) {
   const { isLoading: isDepositConfirming, isSuccess: isDepositSuccess } = useWaitForTransactionReceipt({ hash: depositHash });
   const { isLoading: isWithdrawConfirming, isSuccess: isWithdrawSuccess } = useWaitForTransactionReceipt({ hash: withdrawHash });
 
-  const handleDepositAfterApproval = useCallback(() => {
-    if (isApproveSuccess && !depositTriggered && showDeposit) {
-      setDepositTriggered(true);
-    }
-  }, [isApproveSuccess, depositTriggered, showDeposit]);
-
   useEffect(() => {
-    handleDepositAfterApproval();
-  }, [handleDepositAfterApproval]);
+    if (!isApproveSuccess || !pendingDeposit) {
+      return;
+    }
+
+    depositToVault({
+      address: contracts.yieldVault,
+      abi: YieldVaultABI,
+      functionName: 'deposit',
+      args: [BigInt(tokenId), pendingDeposit.strategy, parseUnits(pendingDeposit.principal, 18)],
+    });
+
+    setPendingDeposit(null);
+  }, [isApproveSuccess, pendingDeposit, depositToVault, contracts.yieldVault, tokenId]);
 
   useEffect(() => {
     if (isDepositSuccess && depositHash) {
@@ -96,7 +101,7 @@ export function InvoiceCard({ tokenId, onRefresh }: InvoiceCardProps) {
         description: 'Your invoice is now earning yield.',
       });
       setShowDeposit(false);
-      setDepositTriggered(false);
+      setPendingDeposit(null);
       resetApprove();
       refetchDeposit();
       onRefresh?.();
@@ -114,24 +119,13 @@ export function InvoiceCard({ tokenId, onRefresh }: InvoiceCardProps) {
   }, [isWithdrawSuccess, withdrawHash, refetchDeposit, onRefresh]);
 
   const handleDeposit = (principal: string, selectedStrategy: number) => {
-    setDepositTriggered(false);
+    setPendingDeposit({ principal, strategy: selectedStrategy });
     approve({
       address: contracts.invoiceNFT,
       abi: InvoiceNFTABI,
       functionName: 'approve',
       args: [contracts.yieldVault, BigInt(tokenId)],
     });
-
-    // Auto-trigger deposit after approval
-    if (isApproveSuccess) {
-      const principalWei = BigInt(principal) * BigInt(10 ** 18);
-      depositToVault({
-        address: contracts.yieldVault,
-        abi: YieldVaultABI,
-        functionName: 'deposit',
-        args: [BigInt(tokenId), selectedStrategy, principalWei],
-      });
-    }
   };
 
   const handleWithdraw = () => {

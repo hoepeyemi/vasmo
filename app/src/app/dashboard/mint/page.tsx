@@ -219,7 +219,7 @@ function MintInvoiceContent() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href={`/dashboard/invoice/${mintedTokenId}`}>
                 <Button>
-                  deposit for yield
+                  open invoice
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
