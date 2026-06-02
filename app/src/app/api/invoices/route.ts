@@ -20,6 +20,19 @@ function formatInvoiceStatus(status: number): string {
   }
 }
 
+function formatStrategy(strategy: number): string {
+  switch (strategy) {
+    case 0:
+      return "Hold"
+    case 1:
+      return "Conservative"
+    case 2:
+      return "Aggressive"
+    default:
+      return "Unknown"
+  }
+}
+
 export async function GET() {
   try {
     const activeInvoices = await getActiveInvoices()
@@ -49,7 +62,8 @@ export async function GET() {
             ? {
                 principal: deposit.principal.toString(),
                 accruedYield: accruedYield.toString(),
-                strategy: deposit.strategy,
+                strategy: formatStrategy(Number(deposit.strategy)),
+                strategyCode: Number(deposit.strategy),
               }
             : null,
         }

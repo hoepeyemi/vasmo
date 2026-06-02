@@ -55,8 +55,6 @@ AGENT_PRIVATE_KEY=0x...
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-`AGENT_PRIVATE_KEY` must be a raw 32-byte hex private key (`0x` + 64 hex characters). Do not use an address, ENS name, or wallet label.
-
 If you use the live deployment manifest, the agent can read the Mantle Sepolia defaults from:
 
 - [`contracts/deployments/mantleSepolia.json`](C:/Users/jwavo/vasmo/contracts/deployments/mantleSepolia.json)

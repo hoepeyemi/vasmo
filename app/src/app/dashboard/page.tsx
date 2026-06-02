@@ -27,6 +27,20 @@ interface InvoiceResponse {
     principal: string
     accruedYield: string
     strategy?: string
+    strategyCode?: number
+  }
+}
+
+function strategyNameFromCode(code?: number) {
+  switch (code) {
+    case 0:
+      return "Hold"
+    case 1:
+      return "Conservative"
+    case 2:
+      return "Aggressive"
+    default:
+      return "Unknown"
   }
 }
 
@@ -37,9 +51,9 @@ interface InvoiceDisplay {
   amountRaw: number
   dueDate: string
   daysUntilDue: number
-  strategy: string
-  apy: string
-  accruedYield: string
+  strategy: strategyLabel.toLowerCase(),
+            apy: strategyLabel === "Aggressive" ? `${aggressiveAPY}%` : strategyLabel === "Conservative" ? `${conservativeAPY}%` : "—",
+            accruedYield: string
   status: string
   riskScore: number
 }
@@ -75,6 +89,9 @@ export default function Dashboard() {
           const dueDate = new Date(inv.dueDate)
           const daysUntilDue = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
           const principal = inv.deposit ? Number(formatUnits(BigInt(inv.deposit.principal), 18)) : 0
+          const strategyLabel = typeof inv.deposit?.strategy === "string"
+            ? inv.deposit.strategy
+            : strategyNameFromCode(inv.deposit?.strategyCode)
           const isInYield = Boolean(inv.deposit) || inv.status === "InYield"
           return {
             id: `INV-${String(inv.tokenId).padStart(4, '0')}`,
@@ -83,8 +100,8 @@ export default function Dashboard() {
             amountRaw: principal,
             dueDate: dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
             daysUntilDue,
-            strategy: inv.deposit?.strategy?.toLowerCase() || "—",
-            apy: inv.deposit?.strategy === "Aggressive" ? `${aggressiveAPY}%` : inv.deposit?.strategy === "Conservative" ? `${conservativeAPY}%` : "—",
+            strategy: strategyLabel.toLowerCase(),
+            apy: strategyLabel === "Aggressive" ? `${aggressiveAPY}%` : strategyLabel === "Conservative" ? `${conservativeAPY}%` : "—",
             accruedYield: inv.deposit ? `+$${Number(formatUnits(BigInt(inv.deposit.accruedYield), 18)).toFixed(2)}` : "$0.00",
             status: isInYield ? "InYield" : inv.status,
             riskScore: inv.riskScore || 75,
@@ -297,3 +314,6 @@ export default function Dashboard() {
     </div>
   )
 }
+
+
+
